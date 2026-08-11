@@ -1,11 +1,12 @@
 import axios from "axios";
+import { useAuthStore } from "@/app/store/authStore";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
+  const token = useAuthStore.getState().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -14,7 +15,8 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      // TODO: logique refresh token / redirection login
+      useAuthStore.getState().logout();
+      window.location.href = "/login";
     }
     return Promise.reject(err);
   }
