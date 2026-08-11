@@ -1,1 +1,51 @@
+/* src/index.css */
 @import "tailwindcss";
+
+@theme {
+  --color-primary: #12194A;
+  --color-primary-light: #1E2966;
+  --color-primary-dark: #0A0E2E;
+
+  --color-accent: #F26A1B;
+  --color-accent-light: #F58220;
+  --color-accent-dark: #D65A0F;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --brand-gradient: linear-gradient(
+    135deg,
+    #12194A 0%,
+    #F26A1B 100%
+  );
+}
+
+.bg-brand-gradient {
+  background-image: var(--brand-gradient);
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #0f172a;
+  }
+
+  .dark {
+    --background: #0f172a;
+    --foreground: #f8fafc;
+  }
+}
+
+/* Appliquer les variables */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
