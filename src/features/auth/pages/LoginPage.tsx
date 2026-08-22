@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/shared/components/ThemeToggle";
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const successMessage = (location.state as { message?: string })?.message;
   const login = useAuthStore((state) => state.login);
 
   const [serverError, setServerError] = useState<string | null>(null);
@@ -34,8 +35,8 @@ export default function LoginPage() {
       const { user, accessToken, refreshToken } = await authService.login(values);
       login(user, accessToken, refreshToken);
 
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/dashboard";
-      navigate(redirectTo, { replace: true });
+      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/profile";
+        navigate(redirectTo, { replace: true });
     } catch {
       setServerError("Email ou mot de passe incorrect.");
     } finally {
@@ -200,6 +201,9 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              {successMessage && (
+                <p className="mb-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{successMessage}</p>
+              )}
               {errors.password && (
                 <p className="flex items-center gap-1 text-xs text-red-600 animate-in slide-in-from-top-1 dark:text-red-400">
                   <span className="inline-block h-1 w-1 rounded-full bg-red-600 dark:bg-red-400" />

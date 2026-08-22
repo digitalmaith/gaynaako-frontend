@@ -12,6 +12,7 @@ import { Role } from "@/features/auth/types/auth.types";
 // --- Lazy imports (feature-based) ---
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
+const VerifyEmailPage = lazy(() => import("@/features/auth/pages/VerifyEmailPage"));
 
 const DashboardPage = lazy(() => import("@/features/dashboard/pages/DashboardPage"));
 const OpportunitiesListPage = lazy(() => import("@/features/opportunities/pages/OpportunitiesListPage"));
@@ -20,6 +21,7 @@ const OpportunityDetailPage = lazy(() => import("@/features/opportunities/pages/
 const AdminUsersPage = lazy(() => import("@/features/admin/pages/AdminUsersPage"));
 const AdminOpportunitiesPage = lazy(() => import("@/features/admin/pages/AdminOpportunitiesPage"));
 const AdminLogsPage = lazy(() => import("@/features/admin/pages/AdminLogsPage"));
+const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
 
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
@@ -31,6 +33,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/login", element: withSuspense(LoginPage) },
       { path: "/register", element: withSuspense(RegisterPage) },
+      { path: "/verify-email", element: withSuspense(VerifyEmailPage) },
     ],
   },
 
@@ -41,6 +44,9 @@ export const router = createBrowserRouter([
         element: withSuspense(AppLayout),
         children: [
           { path: "/dashboard", element: withSuspense(DashboardPage) },
+          { path: "/profile", element: withSuspense(ProfilePage) },
+          { path: "/", element: <Navigate to="/profile" replace /> },
+          
           { path: "/opportunities", element: withSuspense(OpportunitiesListPage) },
           { path: "/opportunities/:id", element: withSuspense(OpportunityDetailPage) },
 
