@@ -23,6 +23,9 @@ const AdminOpportunitiesPage = lazy(() => import("@/features/admin/pages/AdminOp
 const AdminLogsPage = lazy(() => import("@/features/admin/pages/AdminLogsPage"));
 const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
 
+const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
+
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
 export const router = createBrowserRouter([
@@ -34,6 +37,8 @@ export const router = createBrowserRouter([
       { path: "/login", element: withSuspense(LoginPage) },
       { path: "/register", element: withSuspense(RegisterPage) },
       { path: "/verify-email", element: withSuspense(VerifyEmailPage) },
+      { path: "/forgot-password", element: withSuspense(ForgotPasswordPage) },
+      { path: "/reset-password", element: withSuspense(ResetPasswordPage) },
     ],
   },
 

@@ -90,4 +90,18 @@ export const authService = {
     const { data } = await api.post<RefreshResponse>("/auth/refresh", { refreshToken });
     return data;
   },
+
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
+  const { data } = await api.post<{ message: string }>("/auth/forgot-password", { email });
+  return data;
+},
+
+resetPassword: async (payload: {
+  email: string;
+  code: string;
+  newPassword: string;
+}): Promise<{ message: string }> => {
+  const { data } = await api.post<{ message: string }>("/auth/reset-password", payload);
+  return data;
+},
 };

@@ -1,13 +1,105 @@
 import { z } from "zod";
+
 import { Role } from "@/features/auth/types/auth.types";
+
+
+const addIssue = (
+  ctx: z.RefinementCtx,
+  path: keyof RegisterFormValues,
+  message: string
+) => {
+  ctx.addIssue({
+    code: "custom",
+    message,
+    path: [path],
+  });
+};
+
+const validateEntrepreneur = (
+  data: RegisterFormValues,
+  ctx: z.RefinementCtx
+) => {
+  if (!data.secteurId) {
+    addIssue(ctx, "secteurId", "Secteur d'activité requis");
+  }
+
+  if (!data.paysId) {
+    addIssue(ctx, "paysId", "Pays requis");
+  }
+
+  if (!data.domaineExpertise) {
+    addIssue(
+      ctx,
+      "domaineExpertise",
+      "Domaine d'expertise requis"
+    );
+  }
+};
+
+const validatePME = (
+  data: RegisterFormValues,
+  ctx: z.RefinementCtx
+) => {
+  if (!data.nomEntreprise) {
+    addIssue(
+      ctx,
+      "nomEntreprise",
+      "Nom de l'entreprise requis"
+    );
+  }
+
+  if (!data.secteurIds?.length) {
+    addIssue(
+      ctx,
+      "secteurIds",
+      "Au moins un secteur d'activité requis"
+    );
+  }
+};
+
+const validateONG = (
+  data: RegisterFormValues,
+  ctx: z.RefinementCtx
+) => {
+  if (!data.nomOrganisation) {
+    addIssue(
+      ctx,
+      "nomOrganisation",
+      "Nom de l'organisation requis"
+    );
+  }
+
+  if (!data.domainesInterventionIds?.length) {
+    addIssue(
+      ctx,
+      "domainesInterventionIds",
+      "Au moins un domaine d'intervention requis"
+    );
+  }
+};
 
 export const registerSchema = z
   .object({
-    role: z.enum([Role.ENTREPRENEUR, Role.PME, Role.ONG]),
+    role: z.enum([
+      Role.ENTREPRENEUR,
+      Role.PME,
+      Role.ONG,
+    ]),
 
-    email: z.string().min(1, "L'email est requis").email("Email invalide"),
-    password: z.string().min(6, "Minimum 6 caractères"),
-    confirmPassword: z.string().min(1, "Confirmez le mot de passe"),
+    email: z.email({
+      error: (issue) =>
+        issue.input === ""
+          ? "L'email est requis"
+          : "Email invalide",
+    }),
+
+    password: z
+      .string()
+      .min(6, "Minimum 6 caractères"),
+
+    confirmPassword: z
+      .string()
+      .min(1, "Confirmez le mot de passe"),
 
     // --- Entrepreneur ---
     secteurId: z.string().optional(),
@@ -21,62 +113,35 @@ export const registerSchema = z
 
     // --- ONG ---
     nomOrganisation: z.string().optional(),
-    domainesInterventionIds: z.array(z.string()).optional(), // ⚠️ pluriel, cohérent avec OngProfile.domainesIntervention
+    domainesInterventionIds: z.array(z.string()).optional(),
     mission: z.string().optional(),
 
     logo: z.instanceof(File).optional().nullable(),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Les mots de passe ne correspondent pas",
-        path: ["confirmPassword"],
-      });
+      addIssue(
+        ctx,
+        "confirmPassword",
+        "Les mots de passe ne correspondent pas"
+      );
     }
 
-    if (data.role === Role.ENTREPRENEUR) {
-      if (!data.secteurId) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Secteur d'activité requis", path: ["secteurId"] });
-      }
-      if (!data.paysId) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Pays requis", path: ["paysId"] });
-      }
-      if (!data.domaineExpertise) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Domaine d'expertise requis", path: ["domaineExpertise"] });
-      }
-    }
+    const validators = {
+      [Role.ENTREPRENEUR]: validateEntrepreneur,
+      [Role.PME]: validatePME,
+      [Role.ONG]: validateONG,
+    };
 
-    if (data.role === Role.PME) {
-      if (!data.nomEntreprise) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nom de l'entreprise requis", path: ["nomEntreprise"] });
-      }
-      if (!data.secteurIds || data.secteurIds.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Au moins un secteur d'activité requis",
-          path: ["secteurIds"],
-        });
-      }
-    }
-
-    if (data.role === Role.ONG) {
-      if (!data.nomOrganisation) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nom de l'organisation requis", path: ["nomOrganisation"] });
-      }
-      if (!data.domainesInterventionIds || data.domainesInterventionIds.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Au moins un domaine d'intervention requis",
-          path: ["domainesInterventionIds"],
-        });
-      }
-    }
+    validators[data.role]?.(data, ctx);
   });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export const stepFields: Record<number, (keyof RegisterFormValues)[]> = {
+export const stepFields: Record<
+  number,
+  (keyof RegisterFormValues)[]
+> = {
   0: ["role"],
   1: ["email", "password", "confirmPassword"],
   2: [],

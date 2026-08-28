@@ -65,12 +65,12 @@ export default function LoginPage() {
         }} />
 
         <div className="relative z-10 flex flex-col items-center px-8 text-center">
-          <div className="mb-8 rounded-2xl bg-white/10 p-4 backdrop-blur-sm ring-1 ring-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
-            <img src={logo} alt="Gaynaako Opportunity Agent" className="h-28 w-28" />
+          <div className="mb-8 rounded-2xl bg-white/10 p-2 backdrop-blur-sm ring-1 ring-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
+            <img src={logo} alt="Gaynaako Opportunity Agent" className="h-18 w-18 rounded-2xl" />
           </div>
           
           <h1 className="mb-4 text-4xl font-bold text-white">
-            Gaynaako
+            <span className="block">Gaynaako</span>
             <span className="block text-xl font-light text-white/80">
               Opportunity Agent
             </span>
@@ -82,19 +82,19 @@ export default function LoginPage() {
 
           <div className="grid w-full max-w-xs grid-cols-1 gap-3">
             <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10 transition-all duration-300 hover:bg-white/10">
-              <Globe className="h-5 w-5 flex-shrink-0 text-accent-light" />
+              <Globe className="h-5 w-5 shrink-0 text-accent-light" />
               <span className="text-sm text-white/80">
                 Veille intelligente multi-sources
               </span>
             </div>
             <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10 transition-all duration-300 hover:bg-white/10">
-              <Sparkles className="h-5 w-5 flex-shrink-0 text-accent-light" />
+              <Sparkles className="h-5 w-5 shrink-0 text-accent-light" />
               <span className="text-sm text-white/80">
                 Recommandation personnalisée par IA
               </span>
             </div>
             <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10 transition-all duration-300 hover:bg-white/10">
-              <Target className="h-5 w-5 flex-shrink-0 text-accent-light" />
+              <Target className="h-5 w-5 shrink-0 text-accent-light" />
               <span className="text-sm text-white/80">
                 Accompagnement chatbot intelligent
               </span>
