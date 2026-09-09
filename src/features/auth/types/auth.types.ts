@@ -67,6 +67,8 @@ export interface AdministrateurProfile {
 
 export interface User {
   id: string;
+  nom: string;
+  prenom: string;
   email: string;
   role: Role;
   statut: Statut;
