@@ -6,7 +6,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "@/app/store/authStore";
 import { authService } from "@/features/auth/services/auth.service";
 import { loginSchema, type LoginFormValues } from "@/features/auth/schemas/login.schema";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.jpeg";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Globe, Target } from "lucide-react";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 

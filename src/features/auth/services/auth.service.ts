@@ -40,6 +40,8 @@ export const authService = {
     formData.append("email", values.email);
     formData.append("password", values.password);
     formData.append("role", values.role);
+    formData.append("nom", values.nom);
+    formData.append("prenom", values.prenom);
 
     if (values.role === "ENTREPRENEUR") {
       if (values.secteurId) formData.append("secteurId", values.secteurId);
@@ -55,7 +57,8 @@ export const authService = {
 
     if (values.role === "ONG") {
       if (values.nomOrganisation) formData.append("nomOrganisation", values.nomOrganisation);
-    values.domainesInterventionIds?.forEach((id) => formData.append("domaineInterventionIds", id));      if (values.mission) formData.append("mission", values.mission);
+      values.domainesInterventionIds?.forEach((id) => formData.append("domaineInterventionIds", id));
+      if (values.mission) formData.append("mission", values.mission);
     }
 
     if (values.logo) {

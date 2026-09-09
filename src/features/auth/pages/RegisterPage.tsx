@@ -22,6 +22,7 @@ import { authService } from "@/features/auth/services/auth.service";
 import { Role } from "@/features/auth/types/auth.types";
 
 import { RoleStep } from "@/features/auth/components/steps/RoleStep";
+import { IdentityStep } from "@/features/auth/components/steps/IdentityStep";
 import { AccountStep } from "@/features/auth/components/steps/AccountStep";
 import { EntrepreneurStep } from "@/features/auth/components/steps/EntrepreneurStep";
 import { PmeStep } from "@/features/auth/components/steps/PmeStep";
@@ -30,7 +31,7 @@ import { LogoStep } from "@/features/auth/components/steps/LogoStep";
 
 import { StepIndicator } from "@/features/auth/components/StepIndicator";
 
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.jpeg";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -58,7 +59,8 @@ export default function RegisterPage() {
 
   const hasLogoStep = role === Role.PME || role === Role.ONG;
 
-  const totalSteps = hasLogoStep ? 4 : 3;
+  // 0 Rôle, 1 Identité, 2 Compte, 3 Infos rôle, (4 Logo si PME/ONG)
+  const totalSteps = hasLogoStep ? 5 : 4;
 
   const fieldsForStep = (
     step: number,
@@ -68,10 +70,14 @@ export default function RegisterPage() {
     }
 
     if (step === 1) {
-      return ["email", "password", "confirmPassword"];
+      return ["nom", "prenom"];
     }
 
     if (step === 2) {
+      return ["email", "password", "confirmPassword"];
+    }
+
+    if (step === 3) {
       if (role === Role.ENTREPRENEUR) {
         return ["secteurId", "paysId", "domaineExpertise"];
       }
@@ -89,7 +95,7 @@ export default function RegisterPage() {
   };
 
   const goNext = async () => {
-    if (currentStep === 1 && isEmailTaken) {
+    if (currentStep === 2 && isEmailTaken) {
       return;
     }
 
@@ -266,28 +272,30 @@ export default function RegisterPage() {
                 />
               )}
 
-              {currentStep === 1 && (
+              {currentStep === 1 && <IdentityStep />}
+
+              {currentStep === 2 && (
                 <AccountStep
                   onEmailStatusChange={setIsEmailTaken}
                 />
               )}
 
-              {currentStep === 2 &&
+              {currentStep === 3 &&
                 role === Role.ENTREPRENEUR && (
                   <EntrepreneurStep />
                 )}
 
-              {currentStep === 2 &&
+              {currentStep === 3 &&
                 role === Role.PME && (
                   <PmeStep />
                 )}
 
-              {currentStep === 2 &&
+              {currentStep === 3 &&
                 role === Role.ONG && (
                   <OngStep />
                 )}
 
-              {currentStep === 3 &&
+              {currentStep === 4 &&
                 hasLogoStep && (
                   <LogoStep
                     watch={watch}

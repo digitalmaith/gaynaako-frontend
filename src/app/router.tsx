@@ -9,6 +9,8 @@ import { NotFound } from "@/shared/components/NotFound";
 import { withSuspense } from "@/shared/utils/withSuspense";
 import { Role } from "@/features/auth/types/auth.types";
 
+
+const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
 // --- Lazy imports (feature-based) ---
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
@@ -29,7 +31,7 @@ const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPassword
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
 export const router = createBrowserRouter([
-  { path: "/", element: <Navigate to="/dashboard" replace /> },
+  { path: "/", element: withSuspense(LandingPage) },
 
   {
     element: <GuestGuard />,

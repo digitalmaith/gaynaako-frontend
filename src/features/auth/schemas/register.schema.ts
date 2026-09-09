@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { Role } from "@/features/auth/types/auth.types";
 
-
 const addIssue = (
   ctx: z.RefinementCtx,
   path: keyof RegisterFormValues,
@@ -28,11 +27,7 @@ const validateEntrepreneur = (
   }
 
   if (!data.domaineExpertise) {
-    addIssue(
-      ctx,
-      "domaineExpertise",
-      "Domaine d'expertise requis"
-    );
+    addIssue(ctx, "domaineExpertise", "Domaine d'expertise requis");
   }
 };
 
@@ -41,19 +36,11 @@ const validatePME = (
   ctx: z.RefinementCtx
 ) => {
   if (!data.nomEntreprise) {
-    addIssue(
-      ctx,
-      "nomEntreprise",
-      "Nom de l'entreprise requis"
-    );
+    addIssue(ctx, "nomEntreprise", "Nom de l'entreprise requis");
   }
 
   if (!data.secteurIds?.length) {
-    addIssue(
-      ctx,
-      "secteurIds",
-      "Au moins un secteur d'activité requis"
-    );
+    addIssue(ctx, "secteurIds", "Au moins un secteur d'activité requis");
   }
 };
 
@@ -62,56 +49,38 @@ const validateONG = (
   ctx: z.RefinementCtx
 ) => {
   if (!data.nomOrganisation) {
-    addIssue(
-      ctx,
-      "nomOrganisation",
-      "Nom de l'organisation requis"
-    );
+    addIssue(ctx, "nomOrganisation", "Nom de l'organisation requis");
   }
 
   if (!data.domainesInterventionIds?.length) {
-    addIssue(
-      ctx,
-      "domainesInterventionIds",
-      "Au moins un domaine d'intervention requis"
-    );
+    addIssue(ctx, "domainesInterventionIds", "Au moins un domaine d'intervention requis");
   }
 };
 
 export const registerSchema = z
   .object({
-    role: z.enum([
-      Role.ENTREPRENEUR,
-      Role.PME,
-      Role.ONG,
-    ]),
+    role: z.enum([Role.ENTREPRENEUR, Role.PME, Role.ONG]),
+
+    nom: z.string().min(1, "Le nom est requis"),
+    prenom: z.string().min(1, "Le prénom est requis"),
 
     email: z.email({
       error: (issue) =>
-        issue.input === ""
-          ? "L'email est requis"
-          : "Email invalide",
+        issue.input === "" ? "L'email est requis" : "Email invalide",
     }),
 
-    password: z
-      .string()
-      .min(6, "Minimum 6 caractères"),
+    password: z.string().min(6, "Minimum 6 caractères"),
 
-    confirmPassword: z
-      .string()
-      .min(1, "Confirmez le mot de passe"),
+    confirmPassword: z.string().min(1, "Confirmez le mot de passe"),
 
-    // --- Entrepreneur ---
     secteurId: z.string().optional(),
     paysId: z.string().optional(),
     domaineExpertise: z.string().optional(),
     objectifs: z.string().optional(),
 
-    // --- PME ---
     nomEntreprise: z.string().optional(),
     secteurIds: z.array(z.string()).optional(),
 
-    // --- ONG ---
     nomOrganisation: z.string().optional(),
     domainesInterventionIds: z.array(z.string()).optional(),
     mission: z.string().optional(),
@@ -120,11 +89,7 @@ export const registerSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
-      addIssue(
-        ctx,
-        "confirmPassword",
-        "Les mots de passe ne correspondent pas"
-      );
+      addIssue(ctx, "confirmPassword", "Les mots de passe ne correspondent pas");
     }
 
     const validators = {
@@ -138,12 +103,10 @@ export const registerSchema = z
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export const stepFields: Record<
-  number,
-  (keyof RegisterFormValues)[]
-> = {
+export const stepFields: Record<number, Array<keyof RegisterFormValues>> = {
   0: ["role"],
-  1: ["email", "password", "confirmPassword"],
-  2: [],
+  1: ["nom", "prenom"],
+  2: ["email", "password", "confirmPassword"],
   3: [],
+  4: [],
 };
