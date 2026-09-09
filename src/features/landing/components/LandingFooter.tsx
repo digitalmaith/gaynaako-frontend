@@ -1,5 +1,5 @@
 import { Mail, Phone } from "lucide-react";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.jpeg";
 
 export function LandingFooter() {
   return (
