@@ -1,7 +1,7 @@
 // src/features/dashboard/pages/DashboardPage.tsx
 import { useEffect, useRef, useState } from "react";
 import { Search, Bot, FileCheck2, ClipboardList, SlidersHorizontal, Send } from "lucide-react";
-import { DashboardLayout } from "../components/DashboardLayout";
+import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { OpportunityFeedItem } from "../components/OpportunityFeedItem";
 import { InsightPromoCard } from "../components/InsightPromoCard";
 import { RecentActivity, type ActivityItem } from "../components/RecentActivity";

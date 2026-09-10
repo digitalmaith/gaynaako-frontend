@@ -8,6 +8,7 @@ import { Unauthorized } from "@/shared/components/Unauthorized";
 import { NotFound } from "@/shared/components/NotFound";
 import { withSuspense } from "@/shared/utils/withSuspense";
 import { Role } from "@/features/auth/types/auth.types";
+import DocumentsPage from "@/features/documents/pages/DocumentsPage";
 
 
 const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
         element: withSuspense(AppLayout),
         children: [
           { path: "/dashboard", element: withSuspense(DashboardPage) },
+          { path: "/documents", element: withSuspense(DocumentsPage) },
           { path: "/profile", element: withSuspense(ProfilePage) },
           { path: "/", element: <Navigate to="/profile" replace /> },
           

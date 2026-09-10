@@ -30,7 +30,7 @@ export function OpportunityFeedItem({ opportunity, isTop }: { opportunity: Oppor
 
         <div className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-white/60">
           <span className={`h-2 w-2 rounded-full ${scoreDot(opportunity.score)}`} />
-          {opportunity.score}%
+          {opportunity.score}% 
         </div>
       </div>
 
