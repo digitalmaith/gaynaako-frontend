@@ -6,7 +6,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useAuthStore } from "@/app/store/authStore";
 import { Tooltip } from "@/shared/components/Tooltip";
 import { getAccountDisplay } from "@/features/auth/utils/getAccountDisplay";
 import { shortcuts } from "./navigation";

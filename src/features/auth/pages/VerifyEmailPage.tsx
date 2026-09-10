@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { authService } from "@/features/auth/services/auth.service";
 import { useResendCooldown } from "@/features/auth/hooks/useResendCooldown";
 import { useAuthStore } from "@/app/store/authStore";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.jpeg";
 
 export default function VerifyEmailPage() {
   const location = useLocation();

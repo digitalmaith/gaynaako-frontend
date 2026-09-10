@@ -1,18 +1,20 @@
-import { Eye, RefreshCw, Upload } from "lucide-react";
-import { documentStatusStyles, type DocumentStatus } from "../documentStatus"; 
-import type { DocumentEntry } from "../types";
-
-
+// src/features/documents/components/DocumentRow.tsx
+import { Eye, RefreshCw, Upload, Trash2 } from "lucide-react";
+import { documentStatusStyles } from "../documentStatus";
+import type { DocumentViewItem } from "../types";
 
 interface DocumentRowProps {
-  document: DocumentEntry;
-  onAction: (document: DocumentEntry) => void;
+  item: DocumentViewItem;
+  onUpload: (item: DocumentViewItem) => void;
+  onDelete: (item: DocumentViewItem) => void;
+  onView: (item: DocumentViewItem) => void;
 }
 
-export function DocumentRow({ document, onAction }: DocumentRowProps) {
-  const style = documentStatusStyles[document.status];
+export function DocumentRow({ item, onUpload, onDelete, onView }: DocumentRowProps) {
+  const style = documentStatusStyles[item.status];
   const Icon = style.icon;
-  const isMissing = document.status === "non_fourni";
+  const isMissing = item.status === "non_fourni";
+  const document = item.document;
 
   return (
     <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 py-3.5 last:border-0 dark:border-white/5">
@@ -22,11 +24,10 @@ export function DocumentRow({ document, onAction }: DocumentRowProps) {
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-slate-800 dark:text-white">
-          {document.label}
+          {item.label}
         </p>
         <p className="truncate text-xs text-slate-400 dark:text-white/40">
-          {document.detail}
-          {document.updatedAt && ` · Mis à jour le ${document.updatedAt}`}
+          {document ? document.nomFichier + " · ajouté le " + new Date(document.dateAjout).toLocaleDateString("fr-FR") : "Document non fourni"}
         </p>
       </div>
 
@@ -35,21 +36,33 @@ export function DocumentRow({ document, onAction }: DocumentRowProps) {
       </span>
 
       <div className="flex shrink-0 items-center gap-1">
-        {!isMissing && (
+        {document && (
           <button
+            onClick={() => onView(item)}
             aria-label="Voir le document"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white/70"
           >
             <Eye size={15} />
           </button>
         )}
+
         <button
-          onClick={() => onAction(document)}
+          onClick={() => onUpload(item)}
           aria-label={isMissing ? "Ajouter le document" : "Remplacer le document"}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white/70"
         >
           {isMissing ? <Upload size={15} /> : <RefreshCw size={15} />}
         </button>
+
+        {document && (
+          <button
+            onClick={() => onDelete(item)}
+            aria-label="Supprimer le document"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 dark:text-white/40 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+          >
+            <Trash2 size={15} />
+          </button>
+        )}
       </div>
     </div>
   );

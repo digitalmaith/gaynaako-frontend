@@ -1,6 +1,6 @@
 import { Search, Bell, Plus, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.jpeg";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useAuthStore } from "@/app/store/authStore";
 import { getAccountDisplay } from "@/features/auth/utils/getAccountDisplay";
 import { ThemeToggle } from "@/shared/theme/ThemeToggle";
 
@@ -52,21 +52,12 @@ export function TopBar() {
             <img
               src={account.logoUrl}
               alt={account.title}
-              className="h-7 w-7 rounded-full object-cover"
+              className="h-10 w-10 rounded-full "
             />
           ) : (
             <div className="h-7 w-7 rounded-full bg-primary/10 dark:bg-white/10" />
           )}
-          <div className="hidden text-left leading-tight sm:block">
-            <p className="text-xs font-medium text-slate-700 dark:text-white/80">
-              {account.title}
-            </p>
-            {account.subtitle && (
-              <p className="text-[11px] text-slate-400 dark:text-white/40">
-                {account.subtitle}
-              </p>
-            )}
-          </div>
+          
           <ChevronDown size={14} className="text-slate-400 dark:text-white/40" />
         </button>
       </div>

@@ -1,71 +1,69 @@
-import { useEffect, useMemo, useState } from "react";
-import { Search, ShieldCheck } from "lucide-react";
+// src/features/documents/pages/DocumentsPage.tsx
+import { useMemo, useState } from "react";
+import { Search, ShieldCheck, AlertCircle } from "lucide-react";
 import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { DocumentRow, DocumentRowSkeleton } from "../components/DocumentRow";
 import { UploadDocumentModal } from "../components/UploadDocumentModal";
-import { documentStatusStyles, type DocumentStatus } from "../documentStatus";
-import type { DocumentEntry } from "../types";
+import { DocumentViewerModal } from "../components/DocumentViewerModal";
+import { documentStatusStyles } from "../documentStatus";
+import { useDocuments } from "../hooks/useDocuments";
+import type { DocumentViewItem, DocumentViewStatus, UserDocument } from "../types";
 
-type FilterKey = "tous" | DocumentStatus;
+type FilterKey = "tous" | DocumentViewStatus;
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: "tous", label: "Tous" },
-  { key: "valide", label: documentStatusStyles.valide.label },
-  { key: "expire", label: documentStatusStyles.expire.label },
-  { key: "avertissement", label: documentStatusStyles.avertissement.label },
+  { key: "fourni", label: documentStatusStyles.fourni.label },
   { key: "non_fourni", label: documentStatusStyles.non_fourni.label },
 ];
 
 export default function DocumentsPage() {
-  const [loading, setLoading] = useState(true);
-  const [documents, setDocuments] = useState<DocumentEntry[]>([]);
+  const { items, loading, error, refetch, uploadDocument, removeDocument } = useDocuments();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("tous");
   const [search, setSearch] = useState("");
-  const [uploadTarget, setUploadTarget] = useState<DocumentEntry | null>(null);
+  const [uploadTarget, setUploadTarget] = useState<DocumentViewItem | null>(null);
+  const [viewTarget, setViewTarget] = useState<UserDocument | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // ⚠️ à remplacer par la vraie réponse de l'API de vérification documentaire
-      setDocuments([
-        { id: "1", label: "NINEA", detail: "Numéro d'identification nationale", status: "valide", updatedAt: "20/01/2025" },
-        { id: "2", label: "Quitus Fiscal", detail: "Délivré par la Direction des Impôts", status: "valide", updatedAt: "31/12/2024" },
-        { id: "3", label: "Attestation Fiscale", detail: "Expiré depuis le 30/04/2026", status: "expire", updatedAt: "30/04/2025" },
-        { id: "4", label: "Statuts Société", detail: "Document constitutif", status: "valide", updatedAt: "12/03/2024" },
-        { id: "5", label: "RIB Certifié", detail: "Certifié par Bank of Africa", status: "valide", updatedAt: "05/02/2025" },
-        { id: "6", label: "Business Plan", detail: "Signature non détectée", status: "avertissement", updatedAt: "18/06/2026" },
-        { id: "7", label: "Attestation IPRES", detail: "Document non fourni", status: "non_fourni" },
-        { id: "8", label: "Bilans Comptables", detail: "Document non fourni", status: "non_fourni" },
-      ]);
-      setLoading(false);
-    }, 900);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const filteredDocuments = useMemo(() => {
-    return documents.filter((doc) => {
-      const matchesFilter = activeFilter === "tous" || doc.status === activeFilter;
-      const matchesSearch = doc.label.toLowerCase().includes(search.toLowerCase());
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesFilter = activeFilter === "tous" || item.status === activeFilter;
+      const matchesSearch = item.label.toLowerCase().includes(search.toLowerCase());
       return matchesFilter && matchesSearch;
     });
-  }, [documents, activeFilter, search]);
+  }, [items, activeFilter, search]);
 
-  const compliant = documents.filter((doc) => doc.status === "valide").length;
-  const total = documents.length;
+  const compliant = items.filter((item) => item.status === "fourni").length;
+  const total = items.length;
   const percent = total === 0 ? 0 : Math.round((compliant / total) * 100);
 
   const countFor = (key: FilterKey) =>
-    key === "tous" ? documents.length : documents.filter((doc) => doc.status === key).length;
+    key === "tous" ? items.length : items.filter((item) => item.status === key).length;
 
-  const handleUploaded = (documentId: string, file: File) => {
-    setDocuments((prev) =>
-      prev.map((doc) =>
-        doc.id === documentId
-          ? { ...doc, status: "avertissement", detail: `${file.name} — en cours de vérification` }
-          : doc
-      )
-    );
-    setUploadTarget(null);
+  const handleUpload = async (libelle: string, file: File) => {
+    if (!uploadTarget) return;
+    try {
+      await uploadDocument(uploadTarget.type, libelle, file);
+      setUploadTarget(null);
+    } catch {
+      // ⚠️ à remplacer par un toast si tu en as un
+      alert("L'envoi du document a échoué. Réessayez.");
+    }
+  };
+
+  const handleDelete = async (item: DocumentViewItem) => {
+    if (!item.document) return;
+    if (!confirm(`Supprimer "${item.label}" ?`)) return;
+    try {
+      await removeDocument(item.document.id);
+    } catch {
+      alert("La suppression a échoué. Réessayez.");
+    }
+  };
+
+  const handleView = (item: DocumentViewItem) => {
+    if (item.document) {
+      setViewTarget(item.document);
+    }
   };
 
   return (
@@ -80,72 +78,97 @@ export default function DocumentsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 dark:border-white/10">
-          <ShieldCheck size={15} className="text-accent" />
-          <span className="text-sm font-medium text-slate-700 dark:text-white/80">
-            {compliant}/{total} conformes
-          </span>
-          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
-            <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Filtres */}
-      <div className="mt-6 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-white/10">
-        {filters.map((filter) => (
-          <button
-            key={filter.key}
-            onClick={() => setActiveFilter(filter.key)}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeFilter === filter.key
-                ? "bg-primary/5 text-primary dark:bg-white/10 dark:text-white"
-                : "text-slate-500 hover:bg-slate-50 dark:text-white/40 dark:hover:bg-white/5"
-            }`}
-          >
-            {filter.label}
-            <span className="text-xs text-slate-400 dark:text-white/30">
-              {countFor(filter.key)}
+        {!loading && !error && (
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 dark:border-white/10">
+            <ShieldCheck size={15} className="text-accent" />
+            <span className="text-sm font-medium text-slate-700 dark:text-white/80">
+              {compliant}/{total} fournis
             </span>
-          </button>
-        ))}
-
-        <div className="relative ml-auto w-full max-w-xs">
-          <Search
-            size={14}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un document..."
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
-          />
-        </div>
-      </div>
-
-      {/* Liste */}
-      <div className="mt-2 rounded-xl border border-slate-200 px-4 dark:border-white/10">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => <DocumentRowSkeleton key={i} />)
-        ) : filteredDocuments.length === 0 ? (
-          <p className="py-10 text-center text-sm text-slate-400 dark:text-white/40">
-            Aucun document ne correspond à ce filtre.
-          </p>
-        ) : (
-          filteredDocuments.map((doc) => (
-            <DocumentRow key={doc.id} document={doc} onAction={setUploadTarget} />
-          ))
+            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+              <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
+            </div>
+          </div>
         )}
       </div>
 
+      {error ? (
+        <div className="mt-8 flex flex-col items-center gap-3 rounded-xl border border-red-200 bg-red-50 py-10 text-center dark:border-red-500/20 dark:bg-red-500/10">
+          <AlertCircle size={22} className="text-red-500" />
+          <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+          <button
+            onClick={refetch}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Réessayer
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-white/10">
+            {filters.map((filter) => (
+              <button
+                key={filter.key}
+                onClick={() => setActiveFilter(filter.key)}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  activeFilter === filter.key
+                    ? "bg-primary/5 text-primary dark:bg-white/10 dark:text-white"
+                    : "text-slate-500 hover:bg-slate-50 dark:text-white/40 dark:hover:bg-white/5"
+                }`}
+              >
+                {filter.label}
+                <span className="text-xs text-slate-400 dark:text-white/30">
+                  {countFor(filter.key)}
+                </span>
+              </button>
+            ))}
+
+            <div className="relative ml-auto w-full max-w-xs">
+              <Search
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30"
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher un document..."
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
+              />
+            </div>
+          </div>
+
+          <div className="mt-2 rounded-xl border border-slate-200 px-4 dark:border-white/10">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => <DocumentRowSkeleton key={i} />)
+            ) : filteredItems.length === 0 ? (
+              <p className="py-10 text-center text-sm text-slate-400 dark:text-white/40">
+                Aucun document ne correspond à ce filtre.
+              </p>
+            ) : (
+              filteredItems.map((item) => (
+                <DocumentRow
+                  key={item.type}
+                  item={item}
+                  onUpload={setUploadTarget}
+                  onDelete={handleDelete}
+                  onView={handleView}
+                />
+              ))
+            )}
+          </div>
+        </>
+      )}
+
       {uploadTarget && (
         <UploadDocumentModal
-          document={uploadTarget}
+          item={uploadTarget}
           onClose={() => setUploadTarget(null)}
-          onUploaded={handleUploaded}
+          onSubmit={handleUpload}
         />
+      )}
+
+      {viewTarget && (
+        <DocumentViewerModal document={viewTarget} onClose={() => setViewTarget(null)} />
       )}
     </DashboardLayout>
   );

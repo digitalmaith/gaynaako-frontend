@@ -7,7 +7,7 @@ import { InsightPromoCard } from "../components/InsightPromoCard";
 import { RecentActivity, type ActivityItem } from "../components/RecentActivity";
 import type { Opportunity } from "../components/OpportunityCard";
 import { Skeleton } from "@/shared/components/Skeleton";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useAuthStore } from "@/app/store/authStore";
 
 const quickActions = [
   { label: "Rechercher", icon: Search, prompt: "Trouve-moi des opportunités correspondant à mon profil" },
