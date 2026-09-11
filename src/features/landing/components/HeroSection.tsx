@@ -247,7 +247,7 @@ export function HeroSection() {
 
         {/* Sous-titre */}
         <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600">
-          Les bonnes opportunités sont là, mais elles sont difficiles à trouver. Gaynaako vous aide à les découvrir et à les saisir.
+          Les bonnes opportunités au bon moment, grâce à l'IA. Découvrez les financements, appels d'offres et opportunités qui correspondent à votre profil.
         </p>
 
         {/* --- CHAMP DE MESSAGE + BOUTON INSCRIPTION --- */}
