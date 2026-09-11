@@ -1,6 +1,5 @@
 import { LandingNavbar } from "@/features/landing/components/LandingNavbar";
 import { HeroSection } from "@/features/landing/components/HeroSection";
-import { SectorTicker } from "@/features/landing/components/SectorTicker";
 import { ProblemSection } from "@/features/landing/components/ProblemSection";
 import { HowItWorksSection } from "@/features/landing/components/HowItWorksSection";
 import { AudienceSection } from "@/features/landing/components/AudienceSection";
@@ -14,7 +13,6 @@ export default function LandingPage() {
     <div className="font-body">
       <LandingNavbar />
       <HeroSection />
-      <SectorTicker />
       <ProblemSection />
       <HowItWorksSection />
       <AudienceSection />

@@ -4,12 +4,20 @@ import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/app/store/authStore";
 import logo from "@/assets/logo.jpeg";
 
+// 🎨 Palette de la marque
+const BRAND = {
+  navy: "#1E2B7A",
+  orange: "#E87722",
+  orangeSoft: "#FDF0E6",
+};
+
+// 📋 Liens adaptés à Gaynaako
 const links = [
-  { label: "Products", href: "#products" },
-  { label: "Solutions", href: "#solutions", hasDropdown: true },
-  { label: "Services", href: "#services", isNew: true },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Insight", href: "#insight" },
+  { label: "Opportunités", href: "#opportunites" },
+  { label: "Organismes", href: "#organismes", hasDropdown: true },
+  { label: "Comment ça marche", href: "#comment-ca-marche" },
+  { label: "Tarifs", href: "#tarifs" },
+  { label: "Blog", href: "#blog", isNew: true },
 ];
 
 export function LandingNavbar() {
@@ -19,10 +27,20 @@ export function LandingNavbar() {
   return (
     <header className="fixed top-0 z-50 w-full px-4 pt-4">
       <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2 shadow-sm backdrop-blur-lg">
+        
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 pl-2">
-          <img src={logo} alt="Gaynaako" className="h-8 w-8 rounded-xl object-cover" />
-          <span className="font-display text-md font-semibold text-slate-900">Gaynaako</span>
+          <img
+            src={logo}
+            alt="Gaynaako"
+            className="h-8 w-8 rounded-xl object-cover"
+          />
+          <span
+            className="font-display text-base font-semibold"
+            style={{ color: BRAND.navy }}
+          >
+            Gaynaako
+          </span>
         </Link>
 
         {/* Liens desktop */}
@@ -35,12 +53,25 @@ export function LandingNavbar() {
             >
               {link.label}
               {link.hasDropdown && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-slate-400"
+                >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               )}
               {link.isNew && (
-                <span className="ml-1 rounded-full border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-blue-600">
+                <span
+                  className="ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                  style={{ background: BRAND.orangeSoft, color: BRAND.orange }}
+                >
                   New
                 </span>
               )}
@@ -53,7 +84,8 @@ export function LandingNavbar() {
           {isAuthenticated ? (
             <Link
               to="/profile"
-              className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="rounded-full px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              style={{ background: BRAND.navy }}
             >
               Mon espace
             </Link>
@@ -63,13 +95,17 @@ export function LandingNavbar() {
                 to="/login"
                 className="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
               >
-                Sign in
+                Se connecter
               </Link>
               <Link
                 to="/register"
-                className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="rounded-full px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:opacity-90 hover:shadow-lg"
+                style={{
+                  background: BRAND.orange,
+                  boxShadow: `0 8px 20px -6px ${BRAND.orange}88`,
+                }}
               >
-                Contact
+                Créer mon compte
               </Link>
             </>
           )}
@@ -99,13 +135,26 @@ export function LandingNavbar() {
                 <span className="flex items-center gap-2">
                   {link.label}
                   {link.isNew && (
-                    <span className="rounded-full border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-blue-600">
+                    <span
+                      className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                      style={{ background: BRAND.orangeSoft, color: BRAND.orange }}
+                    >
                       New
                     </span>
                   )}
                 </span>
                 {link.hasDropdown && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-slate-400"
+                  >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 )}
@@ -117,7 +166,8 @@ export function LandingNavbar() {
                 <Link
                   to="/profile"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-full bg-slate-900 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                  className="rounded-full px-4 py-2.5 text-center text-sm font-semibold text-white"
+                  style={{ background: BRAND.navy }}
                 >
                   Mon espace
                 </Link>
@@ -133,9 +183,10 @@ export function LandingNavbar() {
                   <Link
                     to="/register"
                     onClick={() => setIsOpen(false)}
-                    className="rounded-full bg-slate-900 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                    className="rounded-full px-4 py-2.5 text-center text-sm font-semibold text-white"
+                    style={{ background: BRAND.orange }}
                   >
-                    Commencer
+                    Créer mon compte
                   </Link>
                 </>
               )}

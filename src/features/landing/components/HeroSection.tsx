@@ -3,14 +3,14 @@ import videoBackground from "@/assets/viddeo.mp4";
 
 // 🎨 Palette de la marque (extraite du logo)
 const BRAND = {
-  navy: "#1E2B7A",       // Bleu profond du logo
-  orange: "#E87722",     // Orange du logo
-  navyLight: "#3A4BA8",  // Bleu plus clair
-  navySoft: "#EEF0FA",   // Bleu très clair (fonds)
-  orangeSoft: "#FDF0E6", // Orange très clair (fonds)
+  navy: "#1E2B7A",
+  orange: "#E87722",
+  navyLight: "#3A4BA8",
+  navySoft: "#EEF0FA",
+  orangeSoft: "#FDF0E6",
 };
 
-// 🏦 Organismes de financement (avec palette harmonisée)
+// 🏦 Organismes de financement
 const FUNDING_ORGS = [
   { short: "DER", full: "DER/FJ", color: BRAND.navy },
   { short: "3FPT", full: "3FPT", color: BRAND.orange },
@@ -44,7 +44,7 @@ export function HeroSection() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!message.trim()) return;
-    console.log("Message envoyé à l'IA :", message);
+    console.log("Recherche envoyée à l'IA :", message);
     setMessage("");
   };
 
@@ -144,7 +144,6 @@ export function HeroSection() {
           <source src={videoBackground} type="video/mp4" />
           Votre navigateur ne supporte pas la vidéo.
         </video>
-        {/* Voile légèrement bleuté pour rappeler la marque */}
         <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px]" />
         <div
           className="absolute inset-0"
@@ -157,7 +156,6 @@ export function HeroSection() {
       {/* --- SYSTÈME D'ORBITES --- */}
       <div className="orbit-system pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
         
-        {/* ===== CERCLES D'ORBITE (couleurs de la marque) ===== */}
         <div className="orbit-1 absolute h-125 w-125 rounded-full border border-dashed" style={{ borderColor: `${BRAND.navy}33` }}>
           <div className="absolute left-1/2 top-0 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: `${BRAND.navy}66` }} />
           <div className="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 translate-y-1/2 rounded-full" style={{ background: `${BRAND.navy}66` }} />
@@ -175,14 +173,12 @@ export function HeroSection() {
           <div className="absolute right-0 top-1/2 h-1.5 w-1.5 translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: `${BRAND.orange}55` }} />
         </div>
 
-        {/* Cercles décoratifs */}
         <div className="circle-spin-reverse absolute h-150 w-150 rounded-full border border-dotted" style={{ borderColor: `${BRAND.navy}15` }} />
         <div className="circle-spin absolute h-200 w-200 rounded-full border border-dotted" style={{ borderColor: `${BRAND.orange}12` }} />
         <div className="circle-spin-reverse absolute h-250 w-250 rounded-full border border-dotted" style={{ borderColor: `${BRAND.navy}10` }} />
         <div className="circle-spin absolute h-325 w-325 rounded-full" style={{ borderColor: `${BRAND.navy}08`, border: '1px solid' }} />
         <div className="circle-spin-reverse absolute h-400 w-400 rounded-full" style={{ borderColor: `${BRAND.orange}08`, border: '1px solid' }} />
 
-        {/* ===== BADGES ORGANISMES DE FINANCEMENT ===== */}
         <div className="orbit-1 absolute h-125 w-125">
           <div className="absolute right-[7%] top-[7%] -translate-y-1/2 translate-x-1/2">
             <FundingBadge org={FUNDING_ORGS[0]} counterClass="counter-1" />
@@ -222,32 +218,32 @@ export function HeroSection() {
 
       {/* --- CONTENU PRINCIPAL --- */}
       <div className="relative z-20 mx-auto max-w-6xl px-6 text-center">
-        {/* Badge notation */}
+        
+        {/* Badge de confiance */}
         <div className="mb-6 flex items-center justify-center gap-6 text-sm font-medium text-slate-600">
           <div className="flex items-center gap-2">
-            <span className="font-semibold" style={{ color: BRAND.navy }}>4.6</span> Google
-            <span style={{ color: BRAND.orange }}>★</span>
+            <span className="font-semibold" style={{ color: BRAND.navy }}>+500</span> opportunités
           </div>
+          <div className="h-4 w-px bg-slate-300" />
           <div className="flex items-center gap-2">
-            <span className="font-semibold" style={{ color: BRAND.navy }}>4.9</span> Trustpilot
+            <span className="font-semibold" style={{ color: BRAND.navy }}>8</span> organismes partenaires
           </div>
         </div>
 
-        {/* Titre avec accent orange */}
+        {/* Titre */}
         <h1
           className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-5xl"
           style={{ color: BRAND.navy }}
         >
-          Gaynaako{" "}
+          Les bonnes {" "}
           <span className="relative inline-block" style={{ color: BRAND.orange }}>
             Opportunity
           </span>{" "}
-          Agent
+          Au bon moment
         </h1>
 
         {/* Sous-titre */}
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600">
-          Les bonnes opportunités au bon moment, grâce à l'IA. Découvrez les financements, appels d'offres et opportunités qui correspondent à votre profil.
+        <p className="mx-auto mt-6 max-w-2xl text-md text-slate-600">
         </p>
 
         {/* --- CHAMP DE MESSAGE + BOUTON INSCRIPTION --- */}
@@ -260,7 +256,6 @@ export function HeroSection() {
             onFocus={(e) => (e.currentTarget.style.borderColor = BRAND.orange)}
             onBlur={(e) => (e.currentTarget.style.borderColor = 'transparent')}
           >
-            {/* Icône IA en dégradé bleu → orange */}
             <div
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white"
               style={{
@@ -276,17 +271,16 @@ export function HeroSection() {
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Dites à l'IA ce que vous recherchez..."
+              placeholder="Ex : Je cherche un financement pour une PME agricole..."
               className="flex-1 bg-transparent py-2.5 text-sm text-slate-700 outline-none placeholder:text-slate-400"
             />
             
-            {/* Bouton d'envoi en bleu marine */}
             <button
               type="submit"
               disabled={!message.trim()}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               style={{ background: BRAND.navy }}
-              aria-label="Envoyer"
+              aria-label="Rechercher"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13" />
@@ -295,7 +289,6 @@ export function HeroSection() {
             </button>
           </form>
 
-          {/* Bouton S'inscrire en orange */}
           <button
             className="w-full shrink-0 rounded-full px-6 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:opacity-90 hover:shadow-xl sm:w-auto"
             style={{
@@ -303,13 +296,12 @@ export function HeroSection() {
               boxShadow: `0 10px 25px -5px ${BRAND.orange}66`,
             }}
           >
-            S'inscrire gratuitement
+            Créer mon compte
           </button>
         </div>
 
         {/* Cartes superposées */}
         <div className="relative mx-auto mt-7 h-20 w-full max-w-105">
-          {/* Halo orange + bleu */}
           <div
             className="absolute left-1/2 top-1/2 h-75 w-75 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[80px]"
             style={{ background: `${BRAND.orange}33` }}
@@ -325,11 +317,13 @@ export function HeroSection() {
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
                 style={{ background: BRAND.orangeSoft, color: BRAND.orange }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-slate-900">Terry Lipshutz</p>
-                <p className="text-xs text-slate-400">Approved the design of the iOS app...</p>
+                <p className="text-sm font-semibold text-slate-900">Nouvelle opportunité détectée</p>
+                <p className="text-xs text-slate-400">DER/FJ · Subvention agricole · Il y a 2h</p>
               </div>
             </div>
           </div>
@@ -337,7 +331,7 @@ export function HeroSection() {
           <div className="absolute left-1/2 top-0 z-10 w-90 -translate-x-1/2 rounded-2xl border border-slate-100 bg-white p-4 shadow-xl shadow-slate-200/50">
             <div className="flex items-start gap-3">
               <div className="relative">
-                <img src="https://i.pravatar.cc/150?u=matthew" alt="Matthew Johnson" className="h-10 w-10 rounded-full object-cover" />
+                <img src="https://png.pngtree.com/background/20250111/original/pngtree-smiling-young-black-man-wearing-a-hat-captured-in-profile-photo-picture-image_13525719.jpg" alt="Mamadou Samb" className="h-10 w-10 rounded-full object-cover" />
                 <span
                   className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white"
                   style={{ background: BRAND.orange }}
@@ -346,16 +340,18 @@ export function HeroSection() {
                 </span>
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-slate-900">Matthew Johnson</p>
-                <p className="text-xs text-slate-400">Content Writer · @orixcreative</p>
+                <p className="text-sm font-semibold text-slate-900">Mamadou Samb</p>
+                <p className="text-xs text-slate-400">Candidature soumise · 3FPT · Il y a 5 min</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* --- LOGOS PARTENAIRES ANIMÉS --- */}
+        {/* --- ORGANISMES PARTENAIRES (MARQUEE) --- */}
         <div className="mt-18">
-          <p className="mb-2 text-sm text-slate-400">Trusted by 200,000+ users worldwide</p>
+          <p className="mb-2 text-sm text-slate-400">
+            Connecté aux principaux organismes de financement du Sénégal
+          </p>
           
           <div className="marquee-container relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <div className="flex w-max animate-marquee items-center gap-16 py-4">
