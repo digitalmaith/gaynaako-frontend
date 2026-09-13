@@ -1,3 +1,6 @@
+// src/features/documents/types.ts
+export type ExpirationStatus = "SANS_EXPIRATION" | "VALIDE" | "EXPIRE_BIENTOT" | "EXPIRE";
+
 export interface UserDocument {
   id: string;
   utilisateurId: string;
@@ -7,6 +10,8 @@ export interface UserDocument {
   nomFichier: string;
   mimeType: string;
   tailleOctets: number;
+  dateExpiration: string | null;
+  statutExpiration: ExpirationStatus;
   dateAjout: string;
 }
 
@@ -15,7 +20,7 @@ export interface RequiredDocument {
   label: string;
 }
 
-export type DocumentViewStatus = "fourni" | "non_fourni";
+export type DocumentViewStatus = "fourni" | "non_fourni" | "bientot_expire" | "expire";
 
 export interface DocumentViewItem {
   type: string;

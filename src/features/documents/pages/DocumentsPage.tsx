@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { DocumentRow, DocumentRowSkeleton } from "../components/DocumentRow";
 import { UploadDocumentModal } from "../components/UploadDocumentModal";
 import { DocumentViewerModal } from "../components/DocumentViewerModal";
+import { ExpiredDocumentsBanner } from "../components/ExpiredDocumentsBanner";
 import { documentStatusStyles } from "../documentStatus";
 import { useDocuments } from "../hooks/useDocuments";
 import type { DocumentViewItem, DocumentViewStatus, UserDocument } from "../types";
@@ -14,11 +15,14 @@ type FilterKey = "tous" | DocumentViewStatus;
 const filters: { key: FilterKey; label: string }[] = [
   { key: "tous", label: "Tous" },
   { key: "fourni", label: documentStatusStyles.fourni.label },
+  { key: "bientot_expire", label: documentStatusStyles.bientot_expire.label },
+  { key: "expire", label: documentStatusStyles.expire.label },
   { key: "non_fourni", label: documentStatusStyles.non_fourni.label },
 ];
 
 export default function DocumentsPage() {
-  const { items, loading, error, refetch, uploadDocument, removeDocument } = useDocuments();
+  const { items, expiredItems, loading, error, refetch, uploadDocument, removeDocument } =
+    useDocuments();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("tous");
   const [search, setSearch] = useState("");
   const [uploadTarget, setUploadTarget] = useState<DocumentViewItem | null>(null);
@@ -32,23 +36,25 @@ export default function DocumentsPage() {
     });
   }, [items, activeFilter, search]);
 
-  const compliant = items.filter((item) => item.status === "fourni").length;
+  // "conforme" = fourni ou bientôt expiré (encore valide) — un document expiré ne compte plus comme conforme
+  const compliant = items.filter(
+    (item) => item.status === "fourni" || item.status === "bientot_expire"
+  ).length;
   const total = items.length;
   const percent = total === 0 ? 0 : Math.round((compliant / total) * 100);
 
   const countFor = (key: FilterKey) =>
     key === "tous" ? items.length : items.filter((item) => item.status === key).length;
 
-  const handleUpload = async (libelle: string, file: File) => {
-    if (!uploadTarget) return;
-    try {
-      await uploadDocument(uploadTarget.type, libelle, file);
-      setUploadTarget(null);
-    } catch {
-      // ⚠️ à remplacer par un toast si tu en as un
-      alert("L'envoi du document a échoué. Réessayez.");
-    }
-  };
+  const handleUpload = async (libelle: string, file: File, dateExpiration?: string) => {
+  if (!uploadTarget) return;
+  try {
+    await uploadDocument(uploadTarget.type, libelle, file, dateExpiration);
+    setUploadTarget(null);
+  } catch {
+    alert("L'envoi du document a échoué. Réessayez.");
+  }
+};
 
   const handleDelete = async (item: DocumentViewItem) => {
     if (!item.document) return;
@@ -82,7 +88,7 @@ export default function DocumentsPage() {
           <div className="flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 dark:border-white/10">
             <ShieldCheck size={15} className="text-accent" />
             <span className="text-sm font-medium text-slate-700 dark:text-white/80">
-              {compliant}/{total} fournis
+              {compliant}/{total} conformes
             </span>
             <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
               <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
@@ -90,6 +96,8 @@ export default function DocumentsPage() {
           </div>
         )}
       </div>
+
+      {!loading && !error && <ExpiredDocumentsBanner items={expiredItems} />}
 
       {error ? (
         <div className="mt-8 flex flex-col items-center gap-3 rounded-xl border border-red-200 bg-red-50 py-10 text-center dark:border-red-500/20 dark:bg-red-500/10">

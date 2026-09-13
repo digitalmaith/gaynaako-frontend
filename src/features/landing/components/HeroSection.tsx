@@ -348,13 +348,13 @@ export function HeroSection() {
         </div>
 
         {/* --- ORGANISMES PARTENAIRES (MARQUEE) --- */}
-        <div className="mt-18">
-          <p className="mb-2 text-sm text-slate-400">
+        <div className="mt-22">
+          <p className="mb- text-sm text-slate-400">
             Connecté aux principaux organismes de financement du Sénégal
           </p>
           
           <div className="marquee-container relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-            <div className="flex w-max animate-marquee items-center gap-16 py-4">
+            <div className="flex w-max animate-marquee items-center gap-16 py-4 mt-2">
               {[...Array(2)].map((_, setIndex) => (
                 <React.Fragment key={setIndex}>
                   {["DER/FJ","3FPT","Senegal PME","FONGIP","ADEPME","FONSIS","ARCOP","marchespublics.sn"].map((logo, i) => (

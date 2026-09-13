@@ -3,11 +3,25 @@ import { useCallback, useEffect, useState } from "react";
 import { documentsService } from "../services/documents.service";
 import { requiredDocumentsByRole } from "../requiredDocuments";
 import { useAuthStore } from "@/app/store/authStore";
-import type { DocumentViewItem } from "../types";
+import type { DocumentViewItem, DocumentViewStatus, UserDocument } from "../types";
+
+// ⚠️ valeur confirmée : "EXPIRE_BIENTOT" (pas "BIENTOT_EXPIRE")
+function computeStatus(document?: UserDocument): DocumentViewStatus {
+  if (!document) return "non_fourni";
+
+  switch (document.statutExpiration) {
+    case "EXPIRE":
+      return "expire";
+    case "EXPIRE_BIENTOT":
+      return "bientot_expire";
+    default:
+      return "fourni";
+  }
+}
 
 export function useDocuments() {
   const role = useAuthStore((state) => state.user?.role);
-  const [rawDocuments, setRawDocuments] = useState<DocumentViewItem["document"][]>([]);
+  const [rawDocuments, setRawDocuments] = useState<UserDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,9 +39,6 @@ export function useDocuments() {
   }, []);
 
   useEffect(() => {
-    // On repousse l'appel dans une microtask : les setState de fetchDocuments
-    // (setLoading/setError) ne s'exécutent plus de façon synchrone
-    // dans la même passe que l'effet lui-même.
     queueMicrotask(() => {
       void fetchDocuments();
     });
@@ -36,28 +47,43 @@ export function useDocuments() {
   const required = role ? requiredDocumentsByRole[role] : [];
 
   const items: DocumentViewItem[] = required.map((req) => {
-    const document = rawDocuments.find((doc) => doc?.type === req.type);
+    const document = rawDocuments.find((doc) => doc.type === req.type);
     return {
       type: req.type,
       label: req.label,
-      status: document ? "fourni" : "non_fourni",
+      status: computeStatus(document),
       document,
     };
   });
 
-  const uploadDocument = async (type: string, libelle: string, file: File) => {
-    const existing = rawDocuments.find((doc) => doc?.type === type);
+  const expiredItems = items.filter((item) => item.status === "expire");
+
+  const uploadDocument = async (
+    type: string,
+    libelle: string,
+    file: File,
+    dateExpiration?: string
+  ) => {
+    const existing = rawDocuments.find((doc) => doc.type === type);
     if (existing) {
       await documentsService.remove(existing.id);
     }
-    const uploaded = await documentsService.upload({ type, libelle, file });
-    setRawDocuments((prev) => [...prev.filter((doc) => doc?.type !== type), uploaded]);
+    const uploaded = await documentsService.upload({ type, libelle, file, dateExpiration });
+    setRawDocuments((prev) => [...prev.filter((doc) => doc.type !== type), uploaded]);
   };
 
   const removeDocument = async (documentId: string) => {
     await documentsService.remove(documentId);
-    setRawDocuments((prev) => prev.filter((doc) => doc?.id !== documentId));
+    setRawDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
   };
 
-  return { items, loading, error, refetch: fetchDocuments, uploadDocument, removeDocument };
+  return {
+    items,
+    expiredItems,
+    loading,
+    error,
+    refetch: fetchDocuments,
+    uploadDocument,
+    removeDocument,
+  };
 }

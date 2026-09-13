@@ -83,7 +83,7 @@ export function LandingNavbar() {
         <div className="hidden items-center gap-2 md:flex">
           {isAuthenticated ? (
             <Link
-              to="/profile"
+              to="/login"
               className="rounded-full px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
               style={{ background: BRAND.navy }}
             >

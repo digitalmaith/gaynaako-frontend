@@ -1,5 +1,5 @@
 // src/features/documents/documentStatus.ts
-import { CheckCircle2, Clock, type LucideIcon } from "lucide-react";
+import { CheckCircle2, Clock, AlertTriangle, XCircle, type LucideIcon } from "lucide-react";
 import type { DocumentViewStatus } from "./types";
 
 export interface DocumentStatusStyle {
@@ -15,6 +15,18 @@ export const documentStatusStyles: Record<DocumentViewStatus, DocumentStatusStyl
     label: "Fourni",
     text: "text-emerald-800 dark:text-emerald-300",
     badge: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300",
+  },
+  bientot_expire: {
+    icon: AlertTriangle,
+    label: "Expire bientôt",
+    text: "text-amber-800 dark:text-amber-300",
+    badge: "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300",
+  },
+  expire: {
+    icon: XCircle,
+    label: "Expiré",
+    text: "text-red-800 dark:text-red-300",
+    badge: "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300",
   },
   non_fourni: {
     icon: Clock,

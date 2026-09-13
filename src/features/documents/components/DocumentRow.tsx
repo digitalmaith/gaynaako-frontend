@@ -10,6 +10,23 @@ interface DocumentRowProps {
   onView: (item: DocumentViewItem) => void;
 }
 
+function buildDetail(item: DocumentViewItem): string {
+  const document = item.document;
+  if (!document) return "Document non fourni";
+
+  const addedLabel = `ajouté le ${new Date(document.dateAjout).toLocaleDateString("fr-FR")}`;
+
+  if (item.status === "expire" && document.dateExpiration) {
+    return `${document.nomFichier} · expiré le ${new Date(document.dateExpiration).toLocaleDateString("fr-FR")}`;
+  }
+
+  if (item.status === "bientot_expire" && document.dateExpiration) {
+    return `${document.nomFichier} · expire le ${new Date(document.dateExpiration).toLocaleDateString("fr-FR")}`;
+  }
+
+  return `${document.nomFichier} · ${addedLabel}`;
+}
+
 export function DocumentRow({ item, onUpload, onDelete, onView }: DocumentRowProps) {
   const style = documentStatusStyles[item.status];
   const Icon = style.icon;
@@ -27,7 +44,7 @@ export function DocumentRow({ item, onUpload, onDelete, onView }: DocumentRowPro
           {item.label}
         </p>
         <p className="truncate text-xs text-slate-400 dark:text-white/40">
-          {document ? document.nomFichier + " · ajouté le " + new Date(document.dateAjout).toLocaleDateString("fr-FR") : "Document non fourni"}
+          {buildDetail(item)}
         </p>
       </div>
 

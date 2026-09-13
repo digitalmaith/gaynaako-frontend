@@ -6,12 +6,13 @@ import type { DocumentViewItem } from "../types";
 interface UploadDocumentModalProps {
   item: DocumentViewItem;
   onClose: () => void;
-  onSubmit: (libelle: string, file: File) => Promise<void>;
+  onSubmit: (libelle: string, file: File, dateExpiration?: string) => Promise<void>;
 }
 
 export function UploadDocumentModal({ item, onClose, onSubmit }: UploadDocumentModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [libelle, setLibelle] = useState(item.label);
+  const [dateExpiration, setDateExpiration] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,7 +21,7 @@ export function UploadDocumentModal({ item, onClose, onSubmit }: UploadDocumentM
     if (!file) return;
     setSubmitting(true);
     try {
-      await onSubmit(libelle, file);
+      await onSubmit(libelle, file, dateExpiration || undefined);
     } finally {
       setSubmitting(false);
     }
@@ -51,6 +52,16 @@ export function UploadDocumentModal({ item, onClose, onSubmit }: UploadDocumentM
           value={libelle}
           onChange={(e) => setLibelle(e.target.value)}
           className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-white/5 dark:text-white"
+        />
+
+        <label className="mt-3 block text-xs font-medium text-slate-500 dark:text-white/50">
+          Date d'expiration <span className="text-slate-400 dark:text-white/30">(optionnel)</span>
+        </label>
+        <input
+          type="date"
+          value={dateExpiration}
+          onChange={(e) => setDateExpiration(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-white/5 dark:text-white [color-scheme:light] dark:[color-scheme:dark]"
         />
 
         <div
