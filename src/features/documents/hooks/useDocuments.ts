@@ -5,7 +5,6 @@ import { requiredDocumentsByRole } from "../requiredDocuments";
 import { useAuthStore } from "@/app/store/authStore";
 import type { DocumentViewItem, DocumentViewStatus, UserDocument } from "../types";
 
-// ⚠️ valeur confirmée : "EXPIRE_BIENTOT" (pas "BIENTOT_EXPIRE")
 function computeStatus(document?: UserDocument): DocumentViewStatus {
   if (!document) return "non_fourni";
 
@@ -77,6 +76,15 @@ export function useDocuments() {
     setRawDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
   };
 
+  // Récupère une URL Cloudinary fraîche juste avant l'affichage (l'URL signée expire)
+  const getFreshDocument = async (documentId: string): Promise<UserDocument | undefined> => {
+    const base = rawDocuments.find((doc) => doc.id === documentId);
+    if (!base) return undefined;
+
+    const freshUrl = await documentsService.getSignedUrl(documentId);
+    return { ...base, url: freshUrl };
+  };
+
   return {
     items,
     expiredItems,
@@ -85,5 +93,6 @@ export function useDocuments() {
     refetch: fetchDocuments,
     uploadDocument,
     removeDocument,
+    getFreshDocument,
   };
 }

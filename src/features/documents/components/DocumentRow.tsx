@@ -8,6 +8,7 @@ interface DocumentRowProps {
   onUpload: (item: DocumentViewItem) => void;
   onDelete: (item: DocumentViewItem) => void;
   onView: (item: DocumentViewItem) => void;
+  viewLoading?: boolean;
 }
 
 function buildDetail(item: DocumentViewItem): string {
@@ -27,7 +28,7 @@ function buildDetail(item: DocumentViewItem): string {
   return `${document.nomFichier} · ${addedLabel}`;
 }
 
-export function DocumentRow({ item, onUpload, onDelete, onView }: DocumentRowProps) {
+export function DocumentRow({ item, onUpload, onDelete, onView, viewLoading }: DocumentRowProps) {
   const style = documentStatusStyles[item.status];
   const Icon = style.icon;
   const isMissing = item.status === "non_fourni";
@@ -56,8 +57,9 @@ export function DocumentRow({ item, onUpload, onDelete, onView }: DocumentRowPro
         {document && (
           <button
             onClick={() => onView(item)}
+            disabled={viewLoading}
             aria-label="Voir le document"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white/70"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 disabled:opacity-40 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white/70"
           >
             <Eye size={15} />
           </button>

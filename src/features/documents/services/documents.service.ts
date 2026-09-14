@@ -1,4 +1,3 @@
-// src/features/documents/services/documents.service.ts
 import { api } from "@/shared/services/api";
 import type { UserDocument } from "../types";
 
@@ -6,7 +5,11 @@ interface UploadPayload {
   type: string;
   libelle: string;
   file: File;
-  dateExpiration?: string; // format YYYY-MM-DD ⚠️ à confirmer avec le backend
+  dateExpiration?: string;
+}
+
+interface SignedUrlResponse {
+  url: string;
 }
 
 export const documentsService = {
@@ -32,5 +35,10 @@ export const documentsService = {
 
   remove: async (documentId: string): Promise<void> => {
     await api.delete(`/users/me/documents/${documentId}`);
+  },
+
+  getSignedUrl: async (documentId: string): Promise<string> => {
+    const { data } = await api.get<SignedUrlResponse>(`/users/me/documents/${documentId}/url`);
+    return data.url;
   },
 };

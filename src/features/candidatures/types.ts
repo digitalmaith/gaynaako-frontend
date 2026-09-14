@@ -42,6 +42,7 @@ export interface Opportunite {
   administrateurId: string;
   secteur: Secteur;
   emetteur: Emetteur;
+  scoreMatching: number | null; 
 }
 
 export interface Candidature {

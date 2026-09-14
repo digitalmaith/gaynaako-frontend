@@ -1,6 +1,6 @@
 // src/features/dashboard/pages/DashboardPage.tsx
-import { useEffect, useRef, useState } from "react";
-import { Search, Bot, FileCheck2, ClipboardList, SlidersHorizontal, Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, Bot, FileCheck2, ClipboardList, SlidersHorizontal } from "lucide-react";
 import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { OpportunityFeedItem } from "../components/OpportunityFeedItem";
 import { InsightPromoCard } from "../components/InsightPromoCard";
@@ -8,6 +8,7 @@ import { RecentActivity, type ActivityItem } from "../components/RecentActivity"
 import type { Opportunity } from "../components/OpportunityCard";
 import { Skeleton } from "@/shared/components/Skeleton";
 import { useAuthStore } from "@/app/store/authStore";
+import { AssistantChatBox } from "@/features/assistant/components/AssistantChatBox";
 
 const quickActions = [
   { label: "Rechercher", icon: Search, prompt: "Trouve-moi des opportunités correspondant à mon profil" },
@@ -20,9 +21,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
-  const [message, setMessage] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
@@ -44,17 +42,7 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSend = () => {
-    if (!message.trim()) return;
-    // ⚠️ à brancher sur ton vrai endpoint d'assistant IA
-    console.log("Message envoyé :", message);
-    setMessage("");
-  };
-
-  const handleShortcut = (prompt: string) => {
-    setMessage(prompt);
-    inputRef.current?.focus();
-  };
+  
 
   return (
     <DashboardLayout
@@ -74,54 +62,10 @@ export default function DashboardPage() {
       </h1>
 
       {/* Barre de recherche / assistant */}
-      <div
-        className={`mt-5 rounded-xl border p-4 transition-colors ${
-          isFocused
-            ? "border-primary ring-2 ring-primary/20 dark:border-accent dark:ring-accent/20"
-            : "border-slate-200 dark:border-white/10"
-        }`}
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-          className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 dark:border-white/10"
-        >
-          <Bot size={16} className="shrink-0 text-slate-400 dark:text-white/30" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder="Demandez à l'assistant Gaynaako une recommandation..."
-            className="min-w-0 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-white/30"
-          />
-          <button
-            type="submit"
-            disabled={!message.trim()}
-            aria-label="Envoyer"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-white transition-colors hover:bg-accent-light disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Send size={14} />
-          </button>
-        </form>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {quickActions.map(({ label, icon: Icon, prompt }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => handleShortcut(prompt)}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
-            >
-              <Icon size={14} />
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="mt-5">
+        <AssistantChatBox
+          suggestions={quickActions.map((a) => a.prompt)}
+        />
       </div>
 
       {/* Fil d'opportunités */}

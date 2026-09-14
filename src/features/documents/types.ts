@@ -6,7 +6,8 @@ export interface UserDocument {
   utilisateurId: string;
   type: string;
   libelle: string;
-  url: string;
+  resourceType: string; // ⚠️ ex: "image" — valeur Cloudinary, pas fiable pour déduire le vrai type de fichier, utiliser mimeType
+  url: string; // URL Cloudinary signée, à durée de vie limitée
   nomFichier: string;
   mimeType: string;
   tailleOctets: number;

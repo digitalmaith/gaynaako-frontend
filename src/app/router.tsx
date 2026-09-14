@@ -29,6 +29,7 @@ const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
 
 const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
+const CandidatureDetailPage = lazy(() => import("@/features/candidatures/pages/CandidatureDetailPage"));
 
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
           { path: "/dashboard", element: withSuspense(DashboardPage) },
           { path: "/documents", element: withSuspense(DocumentsPage) },
           { path: "/candidatures", element: withSuspense(CandidaturesPage) },
+          { path: "/candidatures/:id", element: withSuspense(CandidatureDetailPage) },
           { path: "/profile", element: withSuspense(ProfilePage) },
           { path: "/", element: <Navigate to="/profile" replace /> },
           

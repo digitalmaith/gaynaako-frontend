@@ -9,4 +9,9 @@ export const candidaturesService = {
     });
     return data;
   },
+
+  getById: async (candidatureId: string): Promise<Candidature> => {
+    const { data } = await api.get<Candidature>(`/candidatures/${candidatureId}`);
+    return data;
+  },
 };

@@ -21,12 +21,22 @@ const filters: { key: FilterKey; label: string }[] = [
 ];
 
 export default function DocumentsPage() {
-  const { items, expiredItems, loading, error, refetch, uploadDocument, removeDocument } =
-    useDocuments();
+  const {
+    items,
+    expiredItems,
+    loading,
+    error,
+    refetch,
+    uploadDocument,
+    removeDocument,
+    getFreshDocument,
+  } = useDocuments();
+
   const [activeFilter, setActiveFilter] = useState<FilterKey>("tous");
   const [search, setSearch] = useState("");
   const [uploadTarget, setUploadTarget] = useState<DocumentViewItem | null>(null);
   const [viewTarget, setViewTarget] = useState<UserDocument | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -36,7 +46,6 @@ export default function DocumentsPage() {
     });
   }, [items, activeFilter, search]);
 
-  // "conforme" = fourni ou bientôt expiré (encore valide) — un document expiré ne compte plus comme conforme
   const compliant = items.filter(
     (item) => item.status === "fourni" || item.status === "bientot_expire"
   ).length;
@@ -47,14 +56,14 @@ export default function DocumentsPage() {
     key === "tous" ? items.length : items.filter((item) => item.status === key).length;
 
   const handleUpload = async (libelle: string, file: File, dateExpiration?: string) => {
-  if (!uploadTarget) return;
-  try {
-    await uploadDocument(uploadTarget.type, libelle, file, dateExpiration);
-    setUploadTarget(null);
-  } catch {
-    alert("L'envoi du document a échoué. Réessayez.");
-  }
-};
+    if (!uploadTarget) return;
+    try {
+      await uploadDocument(uploadTarget.type, libelle, file, dateExpiration);
+      setUploadTarget(null);
+    } catch {
+      alert("L'envoi du document a échoué. Réessayez.");
+    }
+  };
 
   const handleDelete = async (item: DocumentViewItem) => {
     if (!item.document) return;
@@ -66,9 +75,16 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleView = (item: DocumentViewItem) => {
-    if (item.document) {
-      setViewTarget(item.document);
+  const handleView = async (item: DocumentViewItem) => {
+    if (!item.document) return;
+    setViewLoading(true);
+    try {
+      const fresh = await getFreshDocument(item.document.id);
+      setViewTarget(fresh ?? item.document);
+    } catch {
+      setViewTarget(item.document); // repli sur l'URL déjà connue si le refresh échoue
+    } finally {
+      setViewLoading(false);
     }
   };
 
@@ -160,6 +176,7 @@ export default function DocumentsPage() {
                   onUpload={setUploadTarget}
                   onDelete={handleDelete}
                   onView={handleView}
+                  viewLoading={viewLoading}
                 />
               ))
             )}
