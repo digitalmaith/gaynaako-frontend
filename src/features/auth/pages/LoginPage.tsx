@@ -6,13 +6,14 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "@/app/store/authStore";
 import { authService } from "@/features/auth/services/auth.service";
 import { loginSchema, type LoginFormValues } from "@/features/auth/schemas/login.schema";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.jpeg";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Globe, Target } from "lucide-react";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const successMessage = (location.state as { message?: string })?.message;
   const login = useAuthStore((state) => state.login);
 
   const [serverError, setServerError] = useState<string | null>(null);
@@ -34,8 +35,8 @@ export default function LoginPage() {
       const { user, accessToken, refreshToken } = await authService.login(values);
       login(user, accessToken, refreshToken);
 
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/dashboard";
-      navigate(redirectTo, { replace: true });
+      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/profile";
+        navigate(redirectTo, { replace: true });
     } catch {
       setServerError("Email ou mot de passe incorrect.");
     } finally {
@@ -64,12 +65,12 @@ export default function LoginPage() {
         }} />
 
         <div className="relative z-10 flex flex-col items-center px-8 text-center">
-          <div className="mb-8 rounded-2xl bg-white/10 p-4 backdrop-blur-sm ring-1 ring-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
-            <img src={logo} alt="Gaynaako Opportunity Agent" className="h-28 w-28" />
+          <div className="mb-8 rounded-2xl bg-white/10 p-2 backdrop-blur-sm ring-1 ring-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
+            <img src={logo} alt="Gaynaako Opportunity Agent" className="h-18 w-18 rounded-2xl" />
           </div>
           
           <h1 className="mb-4 text-4xl font-bold text-white">
-            Gaynaako
+            <span className="block">Gaynaako</span>
             <span className="block text-xl font-light text-white/80">
               Opportunity Agent
             </span>
@@ -81,19 +82,19 @@ export default function LoginPage() {
 
           <div className="grid w-full max-w-xs grid-cols-1 gap-3">
             <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10 transition-all duration-300 hover:bg-white/10">
-              <Globe className="h-5 w-5 flex-shrink-0 text-accent-light" />
+              <Globe className="h-5 w-5 shrink-0 text-accent-light" />
               <span className="text-sm text-white/80">
                 Veille intelligente multi-sources
               </span>
             </div>
             <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10 transition-all duration-300 hover:bg-white/10">
-              <Sparkles className="h-5 w-5 flex-shrink-0 text-accent-light" />
+              <Sparkles className="h-5 w-5 shrink-0 text-accent-light" />
               <span className="text-sm text-white/80">
                 Recommandation personnalisée par IA
               </span>
             </div>
             <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10 transition-all duration-300 hover:bg-white/10">
-              <Target className="h-5 w-5 flex-shrink-0 text-accent-light" />
+              <Target className="h-5 w-5 shrink-0 text-accent-light" />
               <span className="text-sm text-white/80">
                 Accompagnement chatbot intelligent
               </span>
@@ -200,6 +201,9 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              {successMessage && (
+                <p className="mb-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{successMessage}</p>
+              )}
               {errors.password && (
                 <p className="flex items-center gap-1 text-xs text-red-600 animate-in slide-in-from-top-1 dark:text-red-400">
                   <span className="inline-block h-1 w-1 rounded-full bg-red-600 dark:bg-red-400" />

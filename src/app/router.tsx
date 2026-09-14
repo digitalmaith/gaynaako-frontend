@@ -8,10 +8,15 @@ import { Unauthorized } from "@/shared/components/Unauthorized";
 import { NotFound } from "@/shared/components/NotFound";
 import { withSuspense } from "@/shared/utils/withSuspense";
 import { Role } from "@/features/auth/types/auth.types";
+import DocumentsPage from "@/features/documents/pages/DocumentsPage";
+import CandidaturesPage from "@/features/candidatures/pages/CandidaturesPage";
 
+
+const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
 // --- Lazy imports (feature-based) ---
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
+const VerifyEmailPage = lazy(() => import("@/features/auth/pages/VerifyEmailPage"));
 
 const DashboardPage = lazy(() => import("@/features/dashboard/pages/DashboardPage"));
 const OpportunitiesListPage = lazy(() => import("@/features/opportunities/pages/OpportunitiesListPage"));
@@ -20,17 +25,25 @@ const OpportunityDetailPage = lazy(() => import("@/features/opportunities/pages/
 const AdminUsersPage = lazy(() => import("@/features/admin/pages/AdminUsersPage"));
 const AdminOpportunitiesPage = lazy(() => import("@/features/admin/pages/AdminOpportunitiesPage"));
 const AdminLogsPage = lazy(() => import("@/features/admin/pages/AdminLogsPage"));
+const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
+
+const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
+const CandidatureDetailPage = lazy(() => import("@/features/candidatures/pages/CandidatureDetailPage"));
 
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
 export const router = createBrowserRouter([
-  { path: "/", element: <Navigate to="/dashboard" replace /> },
+  { path: "/", element: withSuspense(LandingPage) },
 
   {
     element: <GuestGuard />,
     children: [
       { path: "/login", element: withSuspense(LoginPage) },
       { path: "/register", element: withSuspense(RegisterPage) },
+      { path: "/verify-email", element: withSuspense(VerifyEmailPage) },
+      { path: "/forgot-password", element: withSuspense(ForgotPasswordPage) },
+      { path: "/reset-password", element: withSuspense(ResetPasswordPage) },
     ],
   },
 
@@ -41,6 +54,12 @@ export const router = createBrowserRouter([
         element: withSuspense(AppLayout),
         children: [
           { path: "/dashboard", element: withSuspense(DashboardPage) },
+          { path: "/documents", element: withSuspense(DocumentsPage) },
+          { path: "/candidatures", element: withSuspense(CandidaturesPage) },
+          { path: "/candidatures/:id", element: withSuspense(CandidatureDetailPage) },
+          { path: "/profile", element: withSuspense(ProfilePage) },
+          { path: "/", element: <Navigate to="/profile" replace /> },
+          
           { path: "/opportunities", element: withSuspense(OpportunitiesListPage) },
           { path: "/opportunities/:id", element: withSuspense(OpportunityDetailPage) },
 
