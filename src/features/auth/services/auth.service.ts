@@ -99,12 +99,15 @@ export const authService = {
   return data;
 },
 
-resetPassword: async (payload: {
-  email: string;
-  code: string;
-  newPassword: string;
-}): Promise<{ message: string }> => {
-  const { data } = await api.post<{ message: string }>("/auth/reset-password", payload);
-  return data;
+  resetPassword: async (payload: {
+    email: string;
+    code: string;
+    newPassword: string;
+  }): Promise<{ message: string }> => {
+    const { data } = await api.post<{ message: string }>("/auth/reset-password", payload);
+    return data;
+  },
+  logout: async (refreshToken: string): Promise<void> => {
+  await api.post("/auth/logout", { refreshToken });
 },
 };
