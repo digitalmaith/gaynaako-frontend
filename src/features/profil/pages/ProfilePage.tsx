@@ -1,56 +1,47 @@
-import { useAuthStore } from "@/app/store/auth.store";
+// src/features/profil/pages/ProfilePage.tsx
+import { AlertCircle } from "lucide-react";
+import { DashboardLayout } from "@/shared/layout/DashboardLayout";
+import { ProfileHeader } from "../components/ProfileHeader";
+import { EditPmeProfileForm } from "../components/EditPmeProfileForm";
+import { useProfile } from "../hooks/useProfile";
 import { Role } from "@/features/auth/types/auth.types";
 
 export default function ProfilePage() {
-  const user = useAuthStore((state) => state.user);
-
-  if (!user) return null;
+  const { user, loading, error, saving, refetch, updatePmeProfile } = useProfile();
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-bold text-primary">Mon profil</h1>
+    <DashboardLayout>
+      <h1 className="font-display text-2xl font-semibold text-slate-800 dark:text-white">
+        Mon profil
+      </h1>
 
-      <div className="mt-6 space-y-1 text-slate-600">
-        <p><strong>Email :</strong> {user.email}</p>
-        <p><strong>Rôle :</strong> {user.role}</p>
-        <p><strong>Statut :</strong> {user.statut}</p>
-        <p>
-          <strong>Membre depuis :</strong>{" "}
-          {new Date(user.dateCreation).toLocaleDateString("fr-FR")}
-        </p>
-      </div>
+      {loading ? (
+        <div className="mt-6 space-y-5">
+          <div className="h-24 w-full animate-pulse rounded-xl bg-slate-200/70" />
+          <div className="h-64 w-full animate-pulse rounded-xl bg-slate-200/70" />
+        </div>
+      ) : error || !user ? (
+        <div className="mt-8 flex flex-col items-center gap-3 rounded-xl border border-red-200 bg-red-50 py-10 text-center dark:border-red-500/20 dark:bg-red-500/10">
+          <AlertCircle size={22} className="text-red-500" />
+          <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+          <button
+            onClick={refetch}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Réessayer
+          </button>
+        </div>
+      ) : (
+        <div className="mt-6 space-y-5">
+          <ProfileHeader user={user} />
 
-      {user.role === Role.ENTREPRENEUR && user.entrepreneur && (
-        <div className="mt-6 rounded-xl border border-slate-200 p-4">
-          <h2 className="mb-3 font-semibold text-primary">Profil entrepreneur</h2>
-          <p><strong>Secteur :</strong> {user.entrepreneur.secteur.nom}</p>
-          <p><strong>Pays :</strong> {user.entrepreneur.pays.nom}</p>
-          <p><strong>Domaine d'expertise :</strong> {user.entrepreneur.domaineExpertise}</p>
-          {user.entrepreneur.objectifs && (
-            <p><strong>Objectifs :</strong> {user.entrepreneur.objectifs}</p>
+          {user.role === Role.PME && (
+            <EditPmeProfileForm user={user} saving={saving} onSubmit={updatePmeProfile} />
           )}
-        </div>
-      )}
 
-      {user.role === Role.PME && user.pme && (
-        <div className="mt-6 rounded-xl border border-slate-200 p-4">
-          <h2 className="mb-3 font-semibold text-primary">Profil entreprise</h2>
-          <p><strong>Nom :</strong> {user.pme.nomEntreprise}</p>
-          <p><strong>Secteurs :</strong> {user.pme.secteurs.map((s) => s.nom).join(", ")}</p>
+          {/* ⚠️ Entrepreneur et ONG suivront le même pattern une fois les endpoints confirmés */}
         </div>
       )}
-
-      {user.role === Role.ONG && user.ong && (
-        <div className="mt-6 rounded-xl border border-slate-200 p-4">
-          <h2 className="mb-3 font-semibold text-primary">Profil organisation</h2>
-          <p><strong>Nom :</strong> {user.ong.nomOrganisation}</p>
-          <p>
-            <strong>Domaines d'intervention :</strong>{" "}
-            {user.ong.domainesIntervention.map((d) => d.nom).join(", ")}
-          </p>
-          {user.ong.mission && <p><strong>Mission :</strong> {user.ong.mission}</p>}
-        </div>
-      )}
-    </div>
+    </DashboardLayout>
   );
 }
