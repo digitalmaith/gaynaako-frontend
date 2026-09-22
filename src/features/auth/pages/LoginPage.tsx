@@ -9,6 +9,7 @@ import { loginSchema, type LoginFormValues } from "@/features/auth/schemas/login
 import logo from "@/assets/logo.jpeg";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Globe, Target } from "lucide-react";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { Role } from "../types/auth.types";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -29,20 +30,30 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
-    setServerError(null);
-    setIsLoading(true);
-    try {
-      const { user, accessToken, refreshToken } = await authService.login(values);
-      login(user, accessToken, refreshToken);
+  setServerError(null);
+  setIsLoading(true);
 
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/profile";
-        navigate(redirectTo, { replace: true });
-    } catch {
-      setServerError("Email ou mot de passe incorrect.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    const { user, accessToken, refreshToken } =
+      await authService.login(values);
+
+    login(user, accessToken, refreshToken);
+
+    const from =
+      (location.state as { from?: Location })?.from?.pathname;
+
+    const redirectTo =
+      user.role === Role.ADMIN
+        ? "/admin"
+        : from ?? "/dashboard";
+
+    navigate(redirectTo, { replace: true });
+  } catch {
+    setServerError("Email ou mot de passe incorrect.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-white transition-colors duration-300 dark:bg-gray-950">

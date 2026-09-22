@@ -1,4 +1,3 @@
-// src/app/theme-provider.tsx
 import { useEffect } from 'react';
 import { useThemeStore } from './store/themeStore';
 
@@ -7,15 +6,12 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const { theme } = useThemeStore();
+  const theme = useThemeStore((state) => state.theme);
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+
+    root.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
   return <>{children}</>;

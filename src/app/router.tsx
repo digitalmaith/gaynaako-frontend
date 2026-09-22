@@ -10,6 +10,7 @@ import { withSuspense } from "@/shared/utils/withSuspense";
 import { Role } from "@/features/auth/types/auth.types";
 import DocumentsPage from "@/features/documents/pages/DocumentsPage";
 import CandidaturesPage from "@/features/candidatures/pages/CandidaturesPage";
+import { RoleBasedRedirect } from "@/shared/components/RoleBasedRedirect";
 
 
 const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
@@ -22,6 +23,7 @@ const DashboardPage = lazy(() => import("@/features/dashboard/pages/DashboardPag
 const OpportunitiesListPage = lazy(() => import("@/features/opportunities/pages/OpportunitiesListPage"));
 const OpportunityDetailPage = lazy(() => import("@/features/opportunities/pages/OpportunityDetailPage"));
 
+const AdminPage = lazy(() => import("@/features/admin/pages/AdminPage"));
 const AdminUsersPage = lazy(() => import("@/features/admin/pages/AdminUsersPage"));
 const AdminOpportunitiesPage = lazy(() => import("@/features/admin/pages/AdminOpportunitiesPage"));
 const AdminLogsPage = lazy(() => import("@/features/admin/pages/AdminLogsPage"));
@@ -58,7 +60,7 @@ export const router = createBrowserRouter([
           { path: "/candidatures", element: withSuspense(CandidaturesPage) },
           { path: "/candidatures/:id", element: withSuspense(CandidatureDetailPage) },
           { path: "/profile", element: withSuspense(ProfilePage) },
-          { path: "/", element: <Navigate to="/profile" replace /> },
+          { path: "/", element: <RoleBasedRedirect /> },
           
           { path: "/opportunities", element: withSuspense(OpportunitiesListPage) },
           { path: "/opportunities/:id", element: withSuspense(OpportunityDetailPage) },
@@ -66,6 +68,7 @@ export const router = createBrowserRouter([
           {
             element: <RoleGuard allowedRoles={[Role.ADMIN]} />,
             children: [
+              { path: "/admin", element: withSuspense(AdminPage) },
               { path: "/admin/users", element: withSuspense(AdminUsersPage) },
               { path: "/admin/opportunities", element: withSuspense(AdminOpportunitiesPage) },
               { path: "/admin/logs", element: withSuspense(AdminLogsPage) },
