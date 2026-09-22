@@ -1,7 +1,6 @@
 // src/features/documents/pages/DocumentsPage.tsx
 import { useMemo, useState } from "react";
 import { Search, ShieldCheck, AlertCircle } from "lucide-react";
-import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { DocumentRow, DocumentRowSkeleton } from "../components/DocumentRow";
 import { UploadDocumentModal } from "../components/UploadDocumentModal";
 import { DocumentViewerModal } from "../components/DocumentViewerModal";
@@ -82,14 +81,14 @@ export default function DocumentsPage() {
       const fresh = await getFreshDocument(item.document.id);
       setViewTarget(fresh ?? item.document);
     } catch {
-      setViewTarget(item.document); // repli sur l'URL déjà connue si le refresh échoue
+      setViewTarget(item.document);
     } finally {
       setViewLoading(false);
     }
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-semibold text-slate-800 dark:text-white">
@@ -195,6 +194,6 @@ export default function DocumentsPage() {
       {viewTarget && (
         <DocumentViewerModal document={viewTarget} onClose={() => setViewTarget(null)} />
       )}
-    </DashboardLayout>
+    </>
   );
 }

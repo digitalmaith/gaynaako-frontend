@@ -1,4 +1,3 @@
-// src/features/candidatures/pages/CandidaturesPage.tsx
 import { useMemo, useState } from "react";
 import {
   Search,
@@ -10,7 +9,6 @@ import {
   TrendingUp,
   Filter,
 } from "lucide-react";
-import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { CandidatureRow, CandidatureRowSkeleton } from "../components/CandidatureRow";
 import { Pagination } from "../components/Pagination";
 import { candidatureStatusStyles } from "../candidatureStatus";
@@ -80,7 +78,7 @@ export default function CandidaturesPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       {/* ===== EN-TÊTE ===== */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -266,6 +264,6 @@ export default function CandidaturesPage() {
           )}
         </>
       )}
-    </DashboardLayout>
+    </>
   );
 }

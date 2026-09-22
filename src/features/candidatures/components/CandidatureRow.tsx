@@ -27,7 +27,7 @@ export function CandidatureRow({ candidature }: { candidature: Candidature }) {
 
   return (
     <Link
-      to={`/candidatures/${candidature.id}`}
+      to={`/app/candidatures/${candidature.id}`}
       className="group flex flex-wrap items-center gap-4 px-4 py-4 transition-colors hover:bg-slate-50/70 dark:hover:bg-white/5"
     >
       {/* ===== COLONNE PRINCIPALE ===== */}

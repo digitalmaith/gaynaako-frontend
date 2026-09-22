@@ -1,44 +1,64 @@
 /* eslint-disable react-refresh/only-export-components */
 import { lazy } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "@/shared/components/guards/ProtectedRoute";
 import { RoleGuard } from "@/shared/components/guards/RoleGuard";
 import { GuestGuard } from "@/shared/components/guards/GuestGuard";
 import { Unauthorized } from "@/shared/components/Unauthorized";
 import { NotFound } from "@/shared/components/NotFound";
+import { RouteError } from "@/shared/components/RouteError";
 import { withSuspense } from "@/shared/utils/withSuspense";
 import { Role } from "@/features/auth/types/auth.types";
 
-
+// --- Public ---
 const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
-// --- Lazy imports (feature-based) ---
+
+// --- Auth (invités) ---
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
 const VerifyEmailPage = lazy(() => import("@/features/auth/pages/VerifyEmailPage"));
+const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
 
+// --- Layout + redirection ---
+const DashboardLayout = lazy(() => import("@/shared/layout/DashboardLayout"));
+const RoleBasedRedirect = lazy(() =>
+  import("@/shared/components/RoleBasedRedirect").then((m) => ({
+    default: m.RoleBasedRedirect,
+  }))
+);
+
+// --- Zone protégée (user) ---
 const DashboardPage = lazy(() => import("@/features/dashboard/pages/DashboardPage"));
+const DocumentsPage = lazy(() => import("@/features/documents/pages/DocumentsPage"));
+const CandidaturesPage = lazy(() => import("@/features/candidatures/pages/CandidaturesPage"));
+const CandidatureDetailPage = lazy(() => import("@/features/candidatures/pages/CandidatureDetailPage"));
+const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
 const OpportunitiesListPage = lazy(() => import("@/features/opportunities/pages/OpportunitiesListPage"));
 const OpportunityDetailPage = lazy(() => import("@/features/opportunities/pages/OpportunityDetailPage"));
 
+// --- Zone admin ---
 const AdminPage = lazy(() => import("@/features/admin/pages/AdminPage"));
 const AdminUsersPage = lazy(() => import("@/features/admin/pages/AdminUsersPage"));
 const AdminOpportunitiesPage = lazy(() => import("@/features/admin/pages/AdminOpportunitiesPage"));
 const AdminLogsPage = lazy(() => import("@/features/admin/pages/AdminLogsPage"));
-const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
-
-const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
-const CandidatureDetailPage = lazy(() => import("@/features/candidatures/pages/CandidatureDetailPage"));
-const DocumentsPage = lazy(() => import("@/features/documents/pages/DocumentsPage"));
-const CandidaturesPage = lazy(() => import("@/features/candidatures/pages/CandidaturesPage"));
-
-const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
 export const router = createBrowserRouter([
-  { path: "/", element: withSuspense(LandingPage) },
+  // ─────────────────────────────────────────────
+  // PUBLIC
+  // ─────────────────────────────────────────────
+  {
+    path: "/",
+    element: withSuspense(LandingPage),
+    errorElement: <RouteError />,
+  },
 
+  // ─────────────────────────────────────────────
+  // AUTH (invités uniquement)
+  // ─────────────────────────────────────────────
   {
     element: <GuestGuard />,
+    errorElement: <RouteError />,
     children: [
       { path: "/login", element: withSuspense(LoginPage) },
       { path: "/register", element: withSuspense(RegisterPage) },
@@ -48,29 +68,37 @@ export const router = createBrowserRouter([
     ],
   },
 
+  // ─────────────────────────────────────────────
+  // PROTÉGÉ (utilisateur connecté)
+  // ─────────────────────────────────────────────
   {
     element: <ProtectedRoute />,
+    errorElement: <RouteError />,
     children: [
       {
-        element: withSuspense(AppLayout),
+        path: "/app",
+        element: withSuspense(DashboardLayout),
         children: [
-          { path: "/dashboard", element: withSuspense(DashboardPage) },
-          { path: "/documents", element: withSuspense(DocumentsPage) },
-          { path: "/candidatures", element: withSuspense(CandidaturesPage) },
-          { path: "/candidatures/:id", element: withSuspense(CandidatureDetailPage) },
-          { path: "/profile", element: withSuspense(ProfilePage) },
-          { path: "/", element: <Navigate to="/profile" replace /> },
-          
-          { path: "/opportunities", element: withSuspense(OpportunitiesListPage) },
-          { path: "/opportunities/:id", element: withSuspense(OpportunityDetailPage) },
+          // "/app" → redirige selon le rôle
+          { index: true, element: withSuspense(RoleBasedRedirect) },
 
+          // Routes user
+          { path: "dashboard", element: withSuspense(DashboardPage) },
+          { path: "documents", element: withSuspense(DocumentsPage) },
+          { path: "candidatures", element: withSuspense(CandidaturesPage) },
+          { path: "candidatures/:id", element: withSuspense(CandidatureDetailPage) },
+          { path: "profile", element: withSuspense(ProfilePage) },
+          { path: "opportunities", element: withSuspense(OpportunitiesListPage) },
+          { path: "opportunities/:id", element: withSuspense(OpportunityDetailPage) },
+
+          // Routes admin (guard rôle)
           {
             element: <RoleGuard allowedRoles={[Role.ADMIN]} />,
             children: [
-              { path: "/admin", element: withSuspense(AdminPage) },
-              { path: "/admin/users", element: withSuspense(AdminUsersPage) },
-              { path: "/admin/opportunities", element: withSuspense(AdminOpportunitiesPage) },
-              { path: "/admin/logs", element: withSuspense(AdminLogsPage) },
+              { path: "admin", element: withSuspense(AdminPage) },
+              { path: "admin/users", element: withSuspense(AdminUsersPage) },
+              { path: "admin/opportunities", element: withSuspense(AdminOpportunitiesPage) },
+              { path: "admin/logs", element: withSuspense(AdminLogsPage) },
             ],
           },
         ],
@@ -78,6 +106,9 @@ export const router = createBrowserRouter([
     ],
   },
 
+  // ─────────────────────────────────────────────
+  // ERREURS
+  // ─────────────────────────────────────────────
   { path: "/unauthorized", element: <Unauthorized /> },
   { path: "*", element: <NotFound /> },
 ]);

@@ -44,8 +44,8 @@ export default function LoginPage() {
 
     const redirectTo =
       user.role === Role.ADMIN
-        ? "/admin"
-        : from ?? "/dashboard";
+        ? "/app/admin"
+        : from ?? "/app/dashboard";
 
     navigate(redirectTo, { replace: true });
   } catch {

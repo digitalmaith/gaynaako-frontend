@@ -164,7 +164,7 @@ export function LandingNavbar() {
             <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3">
               {isAuthenticated ? (
                 <Link
-                  to="/profile"
+                  to="/app/dashboard"
                   onClick={() => setIsOpen(false)}
                   className="rounded-full px-4 py-2.5 text-center text-sm font-semibold text-white"
                   style={{ background: BRAND.navy }}

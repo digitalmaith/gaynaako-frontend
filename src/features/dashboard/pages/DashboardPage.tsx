@@ -1,7 +1,6 @@
 // src/features/dashboard/pages/DashboardPage.tsx
 import { useEffect, useState } from "react";
 import { Search, Bot, FileCheck2, ClipboardList, SlidersHorizontal } from "lucide-react";
-import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { OpportunityFeedItem } from "../components/OpportunityFeedItem";
 import { InsightPromoCard } from "../components/InsightPromoCard";
 import { RecentActivity, type ActivityItem } from "../components/RecentActivity";
@@ -42,57 +41,55 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  
-
   return (
-    <DashboardLayout
-      rightRail={
-        <>
-          <InsightPromoCard />
-          {loading ? (
-            <Skeleton className="h-40 w-full rounded-xl" />
-          ) : (
-            <RecentActivity items={activity} />
-          )}
-        </>
-      }
-    >
-      <h1 className="font-display text-2xl font-semibold text-slate-800 dark:text-white">
-        Bonjour {user?.prenom ?? ""}
-      </h1>
+    <div className="mx-auto flex max-w-350 gap-6">
+      {/* Colonne principale */}
+      <div className="min-w-0 flex-1">
+        <h1 className="font-display text-2xl font-semibold text-slate-800 dark:text-white">
+          Bonjour {user?.prenom ?? ""}
+        </h1>
 
-      {/* Barre de recherche / assistant */}
-      <div className="mt-5">
-        <AssistantChatBox
-          suggestions={quickActions.map((a) => a.prompt)}
-        />
-      </div>
-
-      {/* Fil d'opportunités */}
-      <div className="mt-8">
-        <div className="flex items-center justify-between">
-          <h2 className="font-medium text-slate-700 dark:text-white/80">
-            Fil d'opportunités
-          </h2>
-          <button className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:text-white/40 dark:hover:text-white/70">
-            <SlidersHorizontal size={14} />
-            Filtrer
-          </button>
+        {/* Barre de recherche / assistant */}
+        <div className="mt-5">
+          <AssistantChatBox suggestions={quickActions.map((a) => a.prompt)} />
         </div>
 
-        <div className="mt-2">
-          {loading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="border-b border-slate-100 py-4 dark:border-white/5">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="mt-2 h-3 w-1/3" />
-                </div>
-              ))
-            : opportunities.map((opp, i) => (
-                <OpportunityFeedItem key={opp.id} opportunity={opp} isTop={i === 0} />
-              ))}
+        {/* Fil d'opportunités */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="font-medium text-slate-700 dark:text-white/80">
+              Fil d'opportunités
+            </h2>
+            <button className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:text-white/40 dark:hover:text-white/70">
+              <SlidersHorizontal size={14} />
+              Filtrer
+            </button>
+          </div>
+
+          <div className="mt-2">
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="border-b border-slate-100 py-4 dark:border-white/5">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="mt-2 h-3 w-1/3" />
+                  </div>
+                ))
+              : opportunities.map((opp, i) => (
+                  <OpportunityFeedItem key={opp.id} opportunity={opp} isTop={i === 0} />
+                ))}
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+
+      {/* Right rail */}
+      <aside className="hidden w-80 shrink-0 space-y-5 xl:block">
+        <InsightPromoCard />
+        {loading ? (
+          <Skeleton className="h-40 w-full rounded-xl" />
+        ) : (
+          <RecentActivity items={activity} />
+        )}
+      </aside>
+    </div>
   );
 }

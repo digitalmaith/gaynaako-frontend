@@ -1,4 +1,3 @@
-// src/features/candidatures/pages/CandidatureDetailPage.tsx
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -16,7 +15,6 @@ import {
   CheckCircle2,
   Check,
 } from "lucide-react";
-import { DashboardLayout } from "@/shared/layout/DashboardLayout";
 import { getStatusStyle } from "../candidatureStatus";
 import { useCandidature } from "../hooks/useCandidature";
 import { MatchScoreRing } from "@/features/dashboard/components/MatchScoreRing";
@@ -49,7 +47,7 @@ export default function CandidatureDetailPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       {/* ===== BOUTON RETOUR ===== */}
       <button
         onClick={() => navigate("/candidatures")}
@@ -461,7 +459,7 @@ export default function CandidatureDetailPage() {
           );
         })()
       )}
-    </DashboardLayout>
+    </>
   );
 }
 

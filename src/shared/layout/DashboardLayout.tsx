@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -6,12 +7,7 @@ import { adminShortcuts, sectionLabels, userShortcuts } from "./navigation";
 import { Role } from "@/features/auth/types/auth.types";
 import { useAuthStore } from "@/app/store/authStore";
 
-interface DashboardLayoutProps {
-  children: ReactNode;
-  rightRail?: ReactNode;
-}
-
-export function DashboardLayout({ children, rightRail }: DashboardLayoutProps) {
+export default function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const role = useAuthStore((s) => s.user?.role);
 
@@ -39,17 +35,12 @@ export function DashboardLayout({ children, rightRail }: DashboardLayoutProps) {
         }`}
       >
         <div className="mx-auto flex max-w-350">
-          <main className="min-w-0 flex-1 px-4 py-8 lg:px-8">{children}</main>
-
-          {rightRail && (
-            <aside className="hidden w-80 shrink-0 space-y-5 border-l border-slate-200 px-5 py-8 dark:border-white/10 xl:block">
-              {rightRail}
-            </aside>
-          )}
+          <main className="min-w-0 flex-1 px-4 py-8 lg:px-8">
+            <Outlet />
+          </main>
         </div>
       </div>
 
-      {/* Nav mobile — visible en dessous de lg */}
       <MobileBottomNav shortcuts={shortcuts} />
     </div>
   );

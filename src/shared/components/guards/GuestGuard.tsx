@@ -18,10 +18,10 @@ export function GuestGuard() {
 
   if (isAuthenticated) {
     if (role === Role.ADMIN) {
-      return <Navigate to="/admin" replace />;
+      return <Navigate to="/app/admin" replace />;
     }
 
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/app/dashboard" replace />;
   }
 
   return <Outlet />;
