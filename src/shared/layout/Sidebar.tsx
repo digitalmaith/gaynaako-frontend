@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import {
- 
   Settings,
   ChevronDown,
   ChevronsLeft,
@@ -9,20 +8,28 @@ import {
 import { useAuthStore } from "@/app/store/authStore";
 import { Tooltip } from "@/shared/components/Tooltip";
 import { getAccountDisplay } from "@/features/auth/utils/getAccountDisplay";
-import { shortcuts } from "./navigation";
+import type { NavShortcut } from "@/shared/layout/navigation";
 
 interface SidebarProps {
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  shortcuts: NavShortcut[];
+  sectionLabel: string;
+  settingsLink?: string;
 }
 
-export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
+export function Sidebar({
+  collapsed,
+  onToggleCollapsed,
+  shortcuts,
+  sectionLabel,
+  settingsLink = "/app/profile",
+}: SidebarProps) {
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const account = getAccountDisplay(user);
 
   return (
-    // Conteneur externe : fixe, pas d'overflow, porte le bouton toggle
     <div
       className={`fixed bottom-0 top-16 hidden shrink-0 transition-all duration-200 lg:block ${
         collapsed ? "w-18" : "w-64"
@@ -36,60 +43,59 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         {collapsed ? <ChevronsRight size={13} /> : <ChevronsLeft size={13} />}
       </button>
 
-      {/* Conteneur interne : scrollable, porte tout le contenu de nav */}
       <aside
         className={`h-full overflow-y-auto border-r border-slate-200 py-6 dark:border-white/10 ${
           collapsed ? "px-2" : "px-4"
         }`}
       >
         {/* Compte */}
-          <Tooltip
-            label={
-              <span>
-                {account.title}
-                {account.subtitle && (
-                  <span className="ml-1 opacity-60">· {account.subtitle}</span>
-                )}
-              </span>
-            }
-            disabled={!collapsed}
+        <Tooltip
+          label={
+            <span>
+              {account.title}
+              {account.subtitle && (
+                <span className="ml-1 opacity-60">· {account.subtitle}</span>
+              )}
+            </span>
+          }
+          disabled={!collapsed}
+        >
+          <button
+            className={`flex w-full items-center gap-2 rounded-lg py-2 text-left hover:bg-slate-50 dark:hover:bg-white/5 ${
+              collapsed ? "justify-center px-0" : "px-2"
+            }`}
           >
-            <button
-              className={`flex w-full items-center gap-2 rounded-lg py-2 text-left hover:bg-slate-50 dark:hover:bg-white/5 ${
-                collapsed ? "justify-center px-0" : "px-2"
-              }`}
-            >
-              {account.logoUrl ? (
-                <img
-                  src={account.logoUrl}
-                  alt={account.title}
-                  className="h-7 w-7 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div className="h-7 w-7 shrink-0 rounded-full bg-primary/10 dark:bg-white/10" />
-              )}
-              {!collapsed && (
-                <>
-                  <div className="min-w-0 leading-tight">
-                    <p className="truncate text-sm font-medium text-slate-700 dark:text-white/80">
-                      {account.title}
+            {account.logoUrl ? (
+              <img
+                src={account.logoUrl}
+                alt={account.title}
+                className="h-7 w-7 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-7 w-7 shrink-0 rounded-full bg-primary/10 dark:bg-white/10" />
+            )}
+            {!collapsed && (
+              <>
+                <div className="min-w-0 leading-tight">
+                  <p className="truncate text-sm font-medium text-slate-700 dark:text-white/80">
+                    {account.title}
+                  </p>
+                  {account.subtitle && (
+                    <p className="truncate text-xs text-slate-400 dark:text-white/40">
+                      {account.subtitle}
                     </p>
-                    {account.subtitle && (
-                      <p className="truncate text-xs text-slate-400 dark:text-white/40">
-                        {account.subtitle}
-                      </p>
-                    )}
-                  </div>
-                  <ChevronDown size={14} className="ml-auto shrink-0 text-slate-400 dark:text-white/40" />
-                </>
-              )}
-            </button>
-          </Tooltip>
+                  )}
+                </div>
+                <ChevronDown size={14} className="ml-auto shrink-0 text-slate-400 dark:text-white/40" />
+              </>
+            )}
+          </button>
+        </Tooltip>
 
         {!collapsed && (
           <div className="mt-6 flex items-center justify-between px-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-white/30">
-              Mes espaces
+              {sectionLabel}
             </p>
           </div>
         )}
@@ -134,7 +140,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         <div className="mt-6 border-t border-slate-100 pt-4 dark:border-white/10">
           <Tooltip label="Paramètres" disabled={!collapsed}>
             <Link
-              to="/dashboard/parametres"
+              to={settingsLink}
               className={`flex items-center rounded-lg py-2 text-sm text-slate-500 hover:bg-slate-50 dark:text-white/50 dark:hover:bg-white/5 ${
                 collapsed ? "justify-center px-0" : "gap-2.5 px-2"
               }`}

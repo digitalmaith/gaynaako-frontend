@@ -1,7 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { shortcuts } from "./navigation";
+import type { NavShortcut } from "./navigation";
 
-export function MobileBottomNav() {
+interface MobileBottomNavProps {
+  shortcuts: NavShortcut[];
+}
+
+export function MobileBottomNav({ shortcuts }: MobileBottomNavProps) {
   const location = useLocation();
 
   return (

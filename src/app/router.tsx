@@ -8,9 +8,6 @@ import { Unauthorized } from "@/shared/components/Unauthorized";
 import { NotFound } from "@/shared/components/NotFound";
 import { withSuspense } from "@/shared/utils/withSuspense";
 import { Role } from "@/features/auth/types/auth.types";
-import DocumentsPage from "@/features/documents/pages/DocumentsPage";
-import CandidaturesPage from "@/features/candidatures/pages/CandidaturesPage";
-import { RoleBasedRedirect } from "@/shared/components/RoleBasedRedirect";
 
 
 const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
@@ -32,6 +29,8 @@ const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
 const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
 const CandidatureDetailPage = lazy(() => import("@/features/candidatures/pages/CandidatureDetailPage"));
+const DocumentsPage = lazy(() => import("@/features/documents/pages/DocumentsPage"));
+const CandidaturesPage = lazy(() => import("@/features/candidatures/pages/CandidaturesPage"));
 
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
@@ -60,7 +59,7 @@ export const router = createBrowserRouter([
           { path: "/candidatures", element: withSuspense(CandidaturesPage) },
           { path: "/candidatures/:id", element: withSuspense(CandidatureDetailPage) },
           { path: "/profile", element: withSuspense(ProfilePage) },
-          { path: "/", element: <RoleBasedRedirect /> },
+          { path: "/", element: <Navigate to="/profile" replace /> },
           
           { path: "/opportunities", element: withSuspense(OpportunitiesListPage) },
           { path: "/opportunities/:id", element: withSuspense(OpportunityDetailPage) },
