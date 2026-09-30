@@ -22,7 +22,19 @@ const FUNDING_ORGS = [
   { short: "MP", full: "Marchés Publics", color: BRAND.navy },
 ];
 
-function FundingBadge({ org, counterClass }) {
+type FundingOrg = {
+  short: string;
+  full: string;
+  color: string;
+};
+
+// Type pour les props de FundingBadge
+type FundingBadgeProps = {
+  readonly org: FundingOrg;
+  readonly counterClass: string;
+};
+
+function FundingBadge({ org, counterClass }: FundingBadgeProps) {
   return (
     <div
       className={`${counterClass} flex h-14 w-14 flex-col items-center justify-center rounded-full bg-white shadow-lg shadow-slate-300/40 ring-1 ring-slate-100 pointer-events-auto`}
@@ -41,7 +53,7 @@ function FundingBadge({ org, counterClass }) {
 export function HeroSection() {
   const [message, setMessage] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!message.trim()) return;
     console.log("Recherche envoyée à l'IA :", message);
@@ -176,7 +188,7 @@ export function HeroSection() {
         <div className="circle-spin-reverse absolute h-150 w-150 rounded-full border border-dotted" style={{ borderColor: `${BRAND.navy}15` }} />
         <div className="circle-spin absolute h-200 w-200 rounded-full border border-dotted" style={{ borderColor: `${BRAND.orange}12` }} />
         <div className="circle-spin-reverse absolute h-250 w-250 rounded-full border border-dotted" style={{ borderColor: `${BRAND.navy}10` }} />
-        <div className="circle-spin absolute h-325 w-325 rounded-full" style={{ borderColor: `${BRAND.navy}08`, border: '1px solid' }} />
+        <div className="circle-spin absolute h-325 w-325 rounded-full" style={{ borderColor: `${BRAND.navy}10`, border: '1px solid' }} />
         <div className="circle-spin-reverse absolute h-400 w-400 rounded-full" style={{ borderColor: `${BRAND.orange}08`, border: '1px solid' }} />
 
         <div className="orbit-1 absolute h-125 w-125">
@@ -237,7 +249,7 @@ export function HeroSection() {
         >
           Les bonnes {" "}
           <span className="relative inline-block" style={{ color: BRAND.orange }}>
-            Opportunity
+            Opportunités
           </span>{" "}
           Au bon moment
         </h1>
@@ -353,9 +365,9 @@ export function HeroSection() {
             Connecté aux principaux organismes de financement du Sénégal
           </p>
           
-          <div className="marquee-container relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+          <div className="marquee-container relative w-full overflow-hidden mask-[linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <div className="flex w-max animate-marquee items-center gap-16 py-4 mt-2">
-              {[...Array(2)].map((_, setIndex) => (
+              {Array.from({ length: 2 }).map((_, setIndex) => (
                 <React.Fragment key={setIndex}>
                   {["DER/FJ","3FPT","Senegal PME","FONGIP","ADEPME","FONSIS","ARCOP","marchespublics.sn"].map((logo, i) => (
                     <span

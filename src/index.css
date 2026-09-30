@@ -26,6 +26,12 @@
 }
 
 @layer base {
+  dialog {
+    margin: auto;
+  }
+}
+
+@layer base {
   :root {
     --background: #ffffff;
     --foreground: #0f172a;

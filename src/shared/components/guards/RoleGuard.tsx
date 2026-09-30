@@ -3,7 +3,7 @@ import { useAuthStore } from "@/app/store/authStore";
 import type { Role } from "@/features/auth/types/auth.types";
 
 interface RoleGuardProps {
-  allowedRoles: Role[];
+  readonly allowedRoles: Role[];
 }
 
 /**

@@ -3,19 +3,21 @@ import { Outlet } from "react-router-dom";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { adminShortcuts, sectionLabels, userShortcuts } from "./navigation";
+import { adminSections, userSections } from "./navigation";
 import { Role } from "@/features/auth/types/auth.types";
 import { useAuthStore } from "@/app/store/authStore";
 
 export default function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const role = useAuthStore((s) => s.user?.role);
+  const logout = useAuthStore((s) => s.logout); // ✅ récupéré du store
 
   const isAdmin = role === Role.ADMIN;
-
-  const shortcuts = isAdmin ? adminShortcuts : userShortcuts;
-  const sectionLabel = isAdmin ? sectionLabels.admin : sectionLabels.user;
+  const sections = isAdmin ? adminSections : userSections;
   const settingsLink = isAdmin ? "/app/admin" : "/app/profile";
+
+  // ✅ Récupère les shortcuts aplatis pour la nav mobile
+  const mobileShortcuts = sections.flatMap((s) => s.items).slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white dark:bg-primary-dark">
@@ -24,9 +26,9 @@ export default function DashboardLayout() {
       <Sidebar
         collapsed={collapsed}
         onToggleCollapsed={() => setCollapsed((c) => !c)}
-        shortcuts={shortcuts}
-        sectionLabel={sectionLabel}
+        sections={sections}
         settingsLink={settingsLink}
+        onLogout={logout}
       />
 
       <div
@@ -41,7 +43,7 @@ export default function DashboardLayout() {
         </div>
       </div>
 
-      <MobileBottomNav shortcuts={shortcuts} />
+      <MobileBottomNav shortcuts={mobileShortcuts} />
     </div>
   );
 }

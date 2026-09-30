@@ -62,12 +62,12 @@ export function TopBar() {
   const { performLogout, isLoading: isLoggingOut } = useLogout();
 
   const menuItems = [
-    { icon: FileText, label: "Documents", href: "/documents" },
+    { icon: FileText, label: "Documents", href: "/app/documents" },
     { icon: Sparkles, label: "Assistant IA", href: "/assistant" },
   ];
 
   const secondaryItems = [
-    { icon: User, label: "Mon profil", href: "/profile" },
+    { icon: User, label: "Mon profil", href: "/app/profile" },
     { icon: Settings, label: "Paramètres", href: "/settings" },
     { icon: HelpCircle, label: "Aide & support", href: "/help" },
   ];

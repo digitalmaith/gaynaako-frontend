@@ -1,8 +1,23 @@
 import { useEffect, useRef } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import {
+  AlertTriangle,
+  AlertOctagon,
+  Info,
+  CheckCircle2,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 
+// ─────────────────────────────────────────────
+// Utils
+// ─────────────────────────────────────────────
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(" ");
+
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+type Variant = "default" | "danger" | "warning" | "info" | "success";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -12,10 +27,53 @@ interface ConfirmDialogProps {
   description?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: "default" | "danger";
+  loadingLabel?: string;
+  variant?: Variant;
   isLoading?: boolean;
 }
 
+interface VariantConfig {
+  icon: LucideIcon;
+  iconBg: string;
+  confirmBtn: string;
+}
+
+// ─────────────────────────────────────────────
+// Config par variante
+// ─────────────────────────────────────────────
+const VARIANTS: Record<Variant, VariantConfig> = {
+  default: {
+    icon: AlertTriangle,
+    iconBg: "bg-accent/10 text-accent dark:bg-accent/15",
+    confirmBtn: "bg-accent hover:bg-accent-dark",
+  },
+  danger: {
+    icon: AlertOctagon,
+    iconBg: "bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400",
+    confirmBtn: "bg-red-600 hover:bg-red-700",
+  },
+  warning: {
+    icon: AlertTriangle,
+    iconBg:
+      "bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
+    confirmBtn: "bg-amber-600 hover:bg-amber-700",
+  },
+  info: {
+    icon: Info,
+    iconBg: "bg-sky-100 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400",
+    confirmBtn: "bg-primary hover:bg-primary-light",
+  },
+  success: {
+    icon: CheckCircle2,
+    iconBg:
+      "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400",
+    confirmBtn: "bg-emerald-600 hover:bg-emerald-700",
+  },
+};
+
+// ─────────────────────────────────────────────
+// Composant
+// ─────────────────────────────────────────────
 export function ConfirmDialog({
   open,
   onClose,
@@ -24,128 +82,141 @@ export function ConfirmDialog({
   description,
   confirmLabel = "Confirmer",
   cancelLabel = "Annuler",
+  loadingLabel = "Traitement...",
   variant = "default",
   isLoading = false,
-}: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
+}: Readonly<ConfirmDialogProps>) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const v = VARIANTS[variant];
+  const Icon = v.icon;
 
-  // Escape + clic extérieur
+  // ─── Ouvre/ferme le dialog natif ───
   useEffect(() => {
-    if (!open) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isLoading) onClose();
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open, onClose, isLoading]);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
 
-  // Bloquer le scroll du body
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
+    if (open && !dialog.open) {
+      dialog.showModal();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
   }, [open]);
 
-  if (!open) return null;
+  // ─── Escape (cancel natif) ───
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleCancel = (e: Event) => {
+      e.preventDefault();  // empêche la fermeture native → passe par onClose
+      onClose();
+    };
+
+    dialog.addEventListener("cancel", handleCancel);
+    return () => dialog.removeEventListener("cancel", handleCancel);
+  }, [onClose]);
+
+  // ─── Clic sur le backdrop ───
+  // (via addEventListener pour éviter S6847 + S1082)
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const rect = dialog.getBoundingClientRect();
+      const isInDialog =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+
+      if (!isInDialog) onClose();
+    };
+
+    dialog.addEventListener("click", handleClick);
+    return () => dialog.removeEventListener("click", handleClick);
+  }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="confirm-title"
+      aria-describedby={description ? "confirm-desc" : undefined}
+      className={cn(
+        "max-w-md overflow-hidden rounded-2xl p-0",
+        "border border-slate-200 bg-white shadow-2xl",
+        "dark:border-white/10 dark:bg-[#0f1435]",
+        "backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm"
+      )}
     >
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-        onClick={() => !isLoading && onClose()}
-      />
-
-      {/* Dialog */}
-      <div
-        ref={dialogRef}
-        className={cn(
-          "relative w-full max-w-md overflow-hidden rounded-2xl",
-          "border border-slate-200 bg-white shadow-2xl",
-          "dark:border-white/10 dark:bg-[#0f1435]"
-        )}
+      {/* Bouton fermer */}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Fermer"
+        className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={isLoading}
-          aria-label="Fermer"
-          className={cn(
-            "absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full",
-            "text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-            "dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white"
-          )}
-        >
-          <X size={16} />
-        </button>
+        <X size={16} />
+      </button>
 
-        <div className="p-6">
-          <div className="flex items-start gap-4">
-            <div
-              className={cn(
-                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full",
-                variant === "danger"
-                  ? "bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400"
-                  : "bg-accent/10 text-accent"
-              )}
-            >
-              <AlertTriangle size={20} />
-            </div>
-            <div className="min-w-0 flex-1 pt-0.5">
-              <h2
-                id="confirm-title"
-                className="text-base font-semibold text-slate-900 dark:text-white"
-              >
-                {title}
-              </h2>
-              {description && (
-                <p className="mt-1.5 text-sm text-slate-500 dark:text-white/50">
-                  {description}
-                </p>
-              )}
-            </div>
+      <div className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Icône */}
+          <div
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full",
+              v.iconBg
+            )}
+          >
+            <Icon size={20} strokeWidth={2.2} />
           </div>
 
-          <div className="mt-6 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              className={cn(
-                "rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium",
-                "text-slate-700 transition-colors hover:bg-slate-50",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-                "dark:border-white/10 dark:text-white/80 dark:hover:bg-white/5"
-              )}
+          {/* Contenu */}
+          <div className="min-w-0 flex-1 pt-0.5">
+            <h2
+              id="confirm-title"
+              className="font-display text-base font-semibold text-slate-900 dark:text-white"
             >
-              {cancelLabel}
-            </button>
-            <button
-              type="button"
-              onClick={onConfirm}
-              disabled={isLoading}
-              className={cn(
-                "rounded-lg px-4 py-2 text-sm font-medium text-white",
-                "transition-colors disabled:cursor-not-allowed disabled:opacity-50",
-                variant === "danger"
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-accent hover:bg-accent/90"
-              )}
-            >
-              {isLoading ? "Déconnexion..." : confirmLabel}
-            </button>
+              {title}
+            </h2>
+            {description && (
+              <p
+                id="confirm-desc"
+                className="mt-1.5 text-sm text-slate-500 dark:text-white/50"
+              >
+                {description}
+              </p>
+            )}
           </div>
         </div>
+
+        {/* Actions */}
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isLoading}
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/5"
+          >
+            {cancelLabel}
+          </button>
+
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isLoading}
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+              v.confirmBtn
+            )}
+          >
+            {isLoading && (
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            )}
+            {isLoading ? loadingLabel : confirmLabel}
+          </button>
+        </div>
       </div>
-    </div>
+    </dialog>
   );
 }

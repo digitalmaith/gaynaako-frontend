@@ -2,18 +2,18 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { ChevronDown, Search, X, Check, Loader2 } from "lucide-react";
 
 export interface SelectOption {
-  id: string;
-  label: string;
+  readonly id: string;
+  readonly label: string;
 }
 
 interface SearchableSelectProps {
-  options: SelectOption[];
-  value: string | string[]; // ids sélectionnés
-  onChange: (value: string | string[]) => void;
-  multiple?: boolean;
-  placeholder?: string;
-  error?: string;
-  isLoading?: boolean;
+  readonly options: SelectOption[];
+  readonly value: string | string[];
+  readonly onChange: (value: string | string[]) => void;
+  readonly multiple?: boolean;
+  readonly placeholder?: string;
+  readonly error?: string;
+  readonly isLoading?: boolean;
 }
 
 export function SearchableSelect({
@@ -35,21 +35,29 @@ export function SearchableSelect({
   );
 
   const filteredOptions = useMemo(
-    () => options.filter((opt) => opt.label.toLowerCase().includes(query.toLowerCase())),
+    () =>
+      options.filter((opt) =>
+        opt.label.toLowerCase().includes(query.toLowerCase())
+      ),
     [options, query]
   );
 
-  const getLabel = (id: string) => options.find((o) => o.id === id)?.label ?? id;
+  const getLabel = (id: string) =>
+    options.find((o) => o.id === id)?.label ?? id;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
         setQuery("");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSelect = (id: string) => {
@@ -71,20 +79,20 @@ export function SearchableSelect({
 
   const singleValue = !multiple && typeof value === "string" ? value : "";
 
-  return (
-    <div ref={containerRef} className="relative">
-      <div
-        onClick={() => !isLoading && setIsOpen((o) => !o)}
-        className={`flex min-h-[42px] w-full cursor-pointer flex-wrap items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${
-          error ? "border-red-400" : "border-slate-300"
-        } ${isOpen ? "ring-2 ring-accent/30 border-accent" : ""} ${isLoading ? "opacity-60" : ""}`}
-      >
-        {isLoading ? (
-          <span className="flex items-center gap-2 text-slate-400">
-            <Loader2 size={14} className="animate-spin" /> Chargement...
-          </span>
-        ) : multiple && selectedIds.length > 0 ? (
-          selectedIds.map((id) => (
+  // ✅ Extraction du ternaire imbriqué
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <span className="flex items-center gap-2 text-slate-400">
+          <Loader2 size={14} className="animate-spin" /> Chargement...
+        </span>
+      );
+    }
+
+    if (multiple && selectedIds.length > 0) {
+      return (
+        <>
+          {selectedIds.map((id) => (
             <span
               key={id}
               className="flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent"
@@ -99,13 +107,35 @@ export function SearchableSelect({
                 }}
               />
             </span>
-          ))
-        ) : !multiple && singleValue ? (
-          <span className="text-slate-700">{getLabel(singleValue)}</span>
-        ) : (
-          <span className="text-slate-400">{placeholder}</span>
+          ))}
+        </>
+      );
+    }
+
+    if (!multiple && singleValue) {
+      return <span className="text-slate-700">{getLabel(singleValue)}</span>;
+    }
+
+    return <span className="text-slate-400">{placeholder}</span>;
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div
+        onClick={() => !isLoading && setIsOpen((o) => !o)}
+        className={`flex min-h-[42px] w-full cursor-pointer flex-wrap items-center gap-1.5 rounded-lg border px-3 py-2 text-sm ${
+          error ? "border-red-400" : "border-slate-300"
+        } ${isOpen ? "ring-2 ring-accent/30 border-accent" : ""} ${
+          isLoading ? "opacity-60" : ""
+        }`}
+      >
+        {renderContent()}
+        {!isLoading && (
+          <ChevronDown
+            size={16}
+            className="ml-auto shrink-0 text-slate-400"
+          />
         )}
-        {!isLoading && <ChevronDown size={16} className="ml-auto shrink-0 text-slate-400" />}
       </div>
 
       {isOpen && !isLoading && (
@@ -122,10 +152,14 @@ export function SearchableSelect({
           </div>
           <ul className="max-h-48 overflow-y-auto py-1">
             {filteredOptions.length === 0 && (
-              <li className="px-3 py-2 text-sm text-slate-400">Aucun résultat</li>
+              <li className="px-3 py-2 text-sm text-slate-400">
+                Aucun résultat
+              </li>
             )}
             {filteredOptions.map((option) => {
-              const isSelected = multiple ? selectedIds.includes(option.id) : singleValue === option.id;
+              const isSelected = multiple
+                ? selectedIds.includes(option.id)
+                : singleValue === option.id;
               return (
                 <li
                   key={option.id}
