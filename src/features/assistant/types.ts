@@ -14,10 +14,29 @@ export interface ChatContext {
 export interface SendMessagePayload {
   message: string;
   conversationId?: string;
-  context?: ChatContext; // ⚠️ à exploiter côté équipe IA pour enrichir le prompt système
+  context?: ChatContext;
 }
 
 export interface SendMessageResponse {
   conversationId: string;
   message: ChatMessage;
+  // 👇 ajouts optionnels
+  intent?: string;
+  suggestions?: string[];
+  meta?: {
+    opportunities_used?: number;
+    duration_ms?: number;
+    model?: string;
+  };
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  lastMessageAt: string;
+  context?: ChatContext;
+}
+
+export interface ConversationDetail extends Conversation {
+  messages: ChatMessage[];
 }

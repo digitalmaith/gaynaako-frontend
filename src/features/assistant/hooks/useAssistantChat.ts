@@ -1,13 +1,35 @@
 // src/features/assistant/hooks/useAssistantChat.ts
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { assistantService } from "../services/assistant.service";
 import type { ChatContext, ChatMessage } from "../types";
 
-export function useAssistantChat(context?: ChatContext) {
+interface UseAssistantChatOptions {
+  context?: ChatContext;
+  conversationId?: string; // charge l'historique si fourni
+}
+
+export function useAssistantChat({ context, conversationId: initialId }: UseAssistantChatOptions = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [conversationId, setConversationId] = useState<string | undefined>(initialId);
   const [sending, setSending] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(!!initialId);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialId) return;
+    queueMicrotask(async () => {
+      setLoadingHistory(true);
+      try {
+        const detail = await assistantService.getConversation(initialId);
+        setMessages(detail.messages);
+        setConversationId(detail.id);
+      } catch {
+        setError("Impossible de charger cette conversation.");
+      } finally {
+        setLoadingHistory(false);
+      }
+    });
+  }, [initialId]);
 
   const send = async (text: string) => {
     const userMessage: ChatMessage = {
@@ -35,5 +57,11 @@ export function useAssistantChat(context?: ChatContext) {
     }
   };
 
-  return { messages, sending, error, send };
+  const reset = () => {
+    setMessages([]);
+    setConversationId(undefined);
+    setError(null);
+  };
+
+  return { messages, sending, loadingHistory, error, conversationId, send, reset };
 }

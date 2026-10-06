@@ -36,6 +36,7 @@ const CandidatureDetailPage = lazy(() => import("@/features/candidatures/pages/C
 const ProfilePage = lazy(() => import("@/features/profil/pages/ProfilePage"));
 const OpportunitiesListPage = lazy(() => import("@/features/opportunities/pages/OpportunitiesListPage"));
 const OpportunityDetailPage = lazy(() => import("@/features/opportunities/pages/OpportunityDetailPage"));
+const AssistantPage = lazy(() => import("@/features/assistant/pages/AssistantPage"));
 
 // --- Zone admin ---
 const AdminPage = lazy(() => import("@/features/admin/pages/AdminPage"));
@@ -90,6 +91,7 @@ export const router = createBrowserRouter([
           { path: "profile", element: withSuspense(ProfilePage) },
           { path: "opportunities", element: withSuspense(OpportunitiesListPage) },
           { path: "opportunities/:id", element: withSuspense(OpportunityDetailPage) },
+          { path: "assistant", element: withSuspense(AssistantPage) },
 
           // Routes admin (guard rôle)
           {

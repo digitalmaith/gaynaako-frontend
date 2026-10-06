@@ -7,8 +7,7 @@
   import type { Opportunity } from "../components/OpportunityCard";
   import { Skeleton } from "@/shared/components/Skeleton";
   import { useAuthStore } from "@/app/store/authStore";
-  import { AssistantChatBox } from "@/features/assistant/components/AssistantChatBox";
-
+  import { DashboardChatEntry } from "../components/DashboardChatEntry";
   const quickActions = [
     { label: "Rechercher", icon: Search, prompt: "Trouve-moi des opportunités correspondant à mon profil" },
     { label: "Assistant IA", icon: Bot, prompt: "Explique-moi pourquoi cette opportunité me correspond" },
@@ -51,7 +50,7 @@
 
           {/* Barre de recherche / assistant */}
           <div className="mt-5">
-            <AssistantChatBox suggestions={quickActions.map((a) => a.prompt)} />
+            <DashboardChatEntry suggestions={quickActions.map((a) => a.prompt)} />
           </div>
 
           {/* Fil d'opportunités */}
