@@ -1,4 +1,5 @@
 // src/features/dashboard/components/OpportunityFeedItem.tsx
+import { Link } from "react-router-dom";
 import { Clock, MapPin } from "lucide-react";
 import type { Opportunity } from "./OpportunityCard";
 
@@ -8,9 +9,23 @@ const scoreDot = (score: number) => {
   return "bg-slate-400";
 };
 
-export function OpportunityFeedItem({ opportunity, isTop }: { opportunity: Opportunity; isTop?: boolean }) {
+export function OpportunityFeedItem({
+  opportunity,
+  isTop,
+}: {
+  opportunity: Opportunity;
+  isTop?: boolean;
+}) {
   return (
-    <div className="border-b border-slate-100 py-4 last:border-0 dark:border-white/5">
+    <Link
+      to={`/app/opportunities/${opportunity.id}`}
+      className="
+        block border-b border-slate-100 py-4 last:border-0
+        transition-colors duration-150
+        hover:bg-slate-50/60
+        dark:border-white/5 dark:hover:bg-white/[0.03]
+      "
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -30,7 +45,7 @@ export function OpportunityFeedItem({ opportunity, isTop }: { opportunity: Oppor
 
         <div className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-white/60">
           <span className={`h-2 w-2 rounded-full ${scoreDot(opportunity.score)}`} />
-          {opportunity.score}% 
+          {opportunity.score}%
         </div>
       </div>
 
@@ -42,6 +57,6 @@ export function OpportunityFeedItem({ opportunity, isTop }: { opportunity: Oppor
           <Clock size={12} /> {opportunity.echeance}
         </span>
       </div>
-    </div>
+    </Link>
   );
 }

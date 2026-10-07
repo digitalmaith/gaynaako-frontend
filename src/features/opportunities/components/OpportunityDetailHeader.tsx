@@ -21,7 +21,7 @@ export function OpportunityDetailHeader({
     <div className="mb-6">
       {/* Breadcrumb retour */}
       <Link
-        to="/opportunities"
+        to="/app/opportunities"
         className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-[#1E2B7A] dark:text-white/50 dark:hover:text-white"
       >
         <ArrowLeft size={14} />

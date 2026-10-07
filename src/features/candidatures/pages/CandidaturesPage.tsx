@@ -221,7 +221,7 @@ export default function CandidaturesPage() {
                 </p>
                 {!search && (
                   <a
-                    href="/dashboard"
+                    href="/app/dashboard"
                     className="mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:opacity-90"
                     style={{
                       background: BRAND.orange,
