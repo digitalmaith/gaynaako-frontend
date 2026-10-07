@@ -37,7 +37,7 @@ export const userSections: NavSection[] = [
       { to: "/app/opportunities", label: "Opportunités", icon: Compass, dot: "bg-emerald-500" },
       { to: "/app/candidatures", label: "Candidatures", icon: ClipboardList, dot: "bg-sky-500" },
       { to: "/app/documents", label: "Documents", icon: FileCheck2, dot: "bg-amber-500" },
-      { to: "/app/assistant", label: "Assistant", icon: Bot, dot: "bg-violet-500" },
+      { to: "/assistant", label: "Assistant", icon: Bot, dot: "bg-violet-500" },
     ],
   },
 ];

@@ -1,15 +1,12 @@
 // src/features/assistant/components/AssistantChatBox.tsx
 import { useEffect, useRef, useState } from "react";
 import {
-  Send,
   Loader2,
   Copy,
   Check,
-  Paperclip,
+  Mic,
   Plus,
-  PanelRightOpen,
-  PanelRightClose,
-  Sparkles,
+  ArrowUp,
 } from "lucide-react";
 import { useAssistantChat } from "../hooks/useAssistantChat";
 import { TypewriterText } from "./TypewriterText";
@@ -21,16 +18,14 @@ interface AssistantChatBoxProps {
   placeholder?: string;
   initialMessage?: string;
   onConversationStart?: (conversationId: string) => void;
-  onNewConversation?: () => void;
-  onToggleSidebar?: () => void;
-  sidebarOpen?: boolean;
   compact?: boolean;
 }
 
 const SUGGESTIONS = [
-  "Trouve-moi des opportunités correspondant à mon profil",
-  "Quels documents me manquent pour être éligible ?",
-  "Montre-moi l'état de mes candidatures en cours",
+  { icon: "💰", text: "Opportunités pour mon profil" },
+  { icon: "📄", text: "Documents manquants" },
+  { icon: "📊", text: "Mes candidatures" },
+  { icon: "🎯", text: "Conseils personnalisés" },
 ];
 
 export function AssistantChatBox({
@@ -39,16 +34,20 @@ export function AssistantChatBox({
   placeholder,
   initialMessage,
   onConversationStart,
-  onNewConversation,
-  onToggleSidebar,
-  sidebarOpen = false,
   compact = false,
 }: AssistantChatBoxProps) {
-  const { messages, sending, loadingHistory, error, conversationId: activeId, send } =
-    useAssistantChat({ context, conversationId });
+  const {
+    messages,
+    sending,
+    loadingHistory,
+    error,
+    conversationId: activeId,
+    send,
+  } = useAssistantChat({ context, conversationId });
 
   const [message, setMessage] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const notifiedRef = useRef(false);
@@ -61,7 +60,8 @@ export function AssistantChatBox({
     }
   }, [activeId, conversationId, onConversationStart]);
 
-  const scrollToEnd = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToEnd = () =>
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
   useEffect(() => {
     scrollToEnd();
@@ -75,7 +75,6 @@ export function AssistantChatBox({
     await send(value);
   };
 
-  // Envoie automatiquement le message initial reçu (ex: depuis le dashboard), une seule fois
   useEffect(() => {
     if (initialMessage && !autoSentRef.current) {
       autoSentRef.current = true;
@@ -103,69 +102,189 @@ export function AssistantChatBox({
     });
   };
 
-  const lastAssistantIndex = messages.reduce((last, m, i) => (m.role === "assistant" ? i : last), -1);
-  const messageText = compact ? "text-[13px]" : "text-sm";
+  const lastAssistantIndex = messages.reduce(
+    (last, m, i) => (m.role === "assistant" ? i : last),
+    -1
+  );
   const maxWidth = compact ? "max-w-2xl" : "max-w-3xl";
+  const isEmpty = !loadingHistory && messages.length === 0;
 
-  return (
-    <div className="grid h-full grid-rows-[auto_1fr_auto] overflow-hidden bg-white dark:bg-[#0A0E2E]">
-      {/* ===== BARRE D'ACTIONS — fixe en haut ===== */}
-      <div className="flex items-center justify-end gap-1.5 border-b border-slate-200 px-4 py-2.5 dark:border-white/10">
-        {onNewConversation && (
-          <button
-            type="button"
-            onClick={onNewConversation}
-            title="Nouvelle conversation"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white/80"
-          >
-            <Plus size={16} />
-          </button>
-        )}
+  /* ================================================================ */
+  /*  INPUT BAR — pilule large style ZAY-G                            */
+  /* ================================================================ */
+  const inputBar = (
+    <div className={`mx-auto w-full ${maxWidth}`}>
+      <div
+        className={`
+          flex items-center gap-2 rounded-full border bg-white/80 p-1.5 pl-2
+          backdrop-blur-xl transition-all duration-300
+          dark:bg-white/[0.05]
+          ${
+            isFocused
+              ? "border-accent/40 shadow-[0_8px_30px_-10px_rgba(242,106,27,0.35)] ring-4 ring-accent/5 dark:border-accent/50"
+              : "border-slate-200/70 shadow-[0_4px_20px_-8px_rgba(18,25,74,0.12)] hover:border-slate-300 dark:border-white/10 dark:hover:border-white/20"
+          }
+        `}
+      >
+        {/* Bouton + rond */}
+        <button
+          type="button"
+          title="Joindre"
+          className="
+            flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+            text-slate-500 transition-all duration-200
+            hover:bg-slate-100 hover:text-slate-700
+            dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/90
+          "
+        >
+          <Plus size={18} strokeWidth={2.2} />
+        </button>
 
-        {onToggleSidebar && (
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            title={sidebarOpen ? "Masquer les conversations" : "Afficher les conversations"}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white/80"
-          >
-            {sidebarOpen ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
-          </button>
-        )}
+        {/* Textarea */}
+        <textarea
+          ref={inputRef}
+          rows={1}
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            handleAutoResize(e.target);
+          }}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={placeholder ?? "Écrivez votre message ici…"}
+          className="
+            min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-sm
+            leading-relaxed text-slate-700 outline-none
+            placeholder:text-slate-400/80
+            dark:text-white dark:placeholder:text-white/30
+          "
+        />
+
+        {/* Micro */}
+        <button
+          type="button"
+          title="Message vocal"
+          className="
+            flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+            text-slate-500 transition-all duration-200
+            hover:bg-slate-100 hover:text-slate-700
+            dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/90
+          "
+        >
+          <Mic size={16} />
+        </button>
+
+        {/* Envoyer */}
+        <button
+          type="button"
+          onClick={() => void handleSend()}
+          disabled={!message.trim() || sending}
+          aria-label="Envoyer"
+          className="
+            flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+            bg-primary text-white
+            transition-all duration-200
+            hover:bg-primary-light hover:scale-105 active:scale-95
+            disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100
+            dark:bg-accent dark:hover:bg-accent-light
+          "
+        >
+          {sending ? (
+            <Loader2 size={15} className="animate-spin" />
+          ) : (
+            <ArrowUp size={16} strokeWidth={2.5} />
+          )}
+        </button>
       </div>
 
-      {/* ===== FIL DE MESSAGES — seul élément scrollable ===== */}
-      <div className="min-h-0 overflow-y-auto px-4 py-6">
-        <div className={`mx-auto ${maxWidth} space-y-5`}>
-          {loadingHistory ? (
-            <div className="space-y-4">
-              <div className="h-16 w-2/3 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/5" />
-              <div className="ml-auto h-12 w-1/2 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/5" />
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 dark:bg-white/5">
-                <Sparkles size={22} className="text-accent" strokeWidth={1.8} />
-              </div>
-              <p className="mt-4 font-display text-base font-semibold text-slate-700 dark:text-white/80">
-                Comment puis-je vous aider ?
-              </p>
-              <p className="mt-1 max-w-xs text-sm text-slate-400 dark:text-white/40">
-                Posez une question ou choisissez une suggestion ci-dessous.
-              </p>
+      {!compact && (
+        <p className="mt-3 text-center text-[10px] tracking-wide text-slate-400/80 dark:text-white/25">
+          L'assistant peut faire des erreurs. Vérifiez les informations importantes.
+        </p>
+      )}
+    </div>
+  );
 
-              <div className="mt-6 flex flex-wrap justify-center gap-2">
-                {SUGGESTIONS.map((text) => (
-                  <button
-                    key={text}
-                    type="button"
-                    onClick={() => void handleSend(text)}
-                    className="rounded-full border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-600 transition-colors hover:border-accent/40 hover:bg-accent/5 hover:text-accent dark:border-white/10 dark:text-white/60 dark:hover:border-accent/40 dark:hover:bg-accent/10"
-                  >
-                    {text}
-                  </button>
-                ))}
-              </div>
+  /* ================================================================ */
+  /*  EMPTY STATE — mascotte + suggestions pilules                    */
+  /* ================================================================ */
+  if (isEmpty) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center overflow-hidden px-6">
+        {/* Mascotte — placeholder à remplacer par ton image */}
+        <div className="relative mb-6 h-32 w-32">
+          {/* Halo doux */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-accent/20 via-accent-light/10 to-primary/10 blur-2xl" />
+          {/* Image / illustration */}
+          <div className="relative flex h-full w-full items-center justify-center">
+            {/* TODO: remplacer par <img src="/mascot.png" /> */}
+            <div className="flex h-24 w-24 items-center justify-center rounded-[32px] bg-gradient-to-br from-accent to-accent-light shadow-[0_20px_50px_-15px_rgba(242,106,27,0.5)]">
+              <span className="font-display text-4xl font-bold text-white">Z</span>
+            </div>
+          </div>
+          {/* Étincelles */}
+          <div className="absolute -right-1 top-2 h-1.5 w-1.5 animate-pulse rounded-full bg-accent/70" />
+          <div
+            className="absolute -left-1 bottom-4 h-1 w-1 animate-pulse rounded-full bg-primary/50"
+            style={{ animationDelay: "0.6s" }}
+          />
+          <div
+            className="absolute right-4 -top-1 h-1 w-1 animate-pulse rounded-full bg-accent-light/60"
+            style={{ animationDelay: "1.2s" }}
+          />
+        </div>
+
+        {/* Titre */}
+        <h1 className="text-center font-display text-2xl font-semibold leading-tight tracking-tight text-slate-800 dark:text-white sm:text-[32px]">
+          Comment puis-je{" "}
+          <span className="bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">
+            vous aider
+          </span>{" "}
+          aujourd'hui&nbsp;?
+        </h1>
+
+        {/* Suggestions pilules */}
+        <div className="mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
+          {SUGGESTIONS.map(({ icon, text }) => (
+            <button
+              key={text}
+              type="button"
+              onClick={() => void handleSend(text)}
+              className="
+                flex items-center gap-2 rounded-full
+                border border-slate-200/70 bg-white/70 px-4 py-2.5
+                text-[13px] font-medium text-slate-600 backdrop-blur
+                shadow-[0_2px_10px_-4px_rgba(18,25,74,0.08)]
+                transition-all duration-200
+                hover:-translate-y-0.5 hover:border-accent/40 hover:bg-accent/[0.04] hover:text-accent hover:shadow-md
+                dark:border-white/10 dark:bg-white/[0.04] dark:text-white/70
+                dark:hover:border-accent/40 dark:hover:bg-accent/10 dark:hover:text-white
+              "
+            >
+              <span className="text-base">{icon}</span>
+              {text}
+            </button>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div className="mt-10 w-full">{inputBar}</div>
+      </div>
+    );
+  }
+
+  /* ================================================================ */
+  /*  CONVERSATION — bulles style ZAY-G                               */
+  /* ================================================================ */
+  return (
+    <div className="grid h-full grid-rows-[1fr_auto] overflow-hidden">
+      <div className="min-h-0 overflow-y-auto px-6 py-8">
+        <div className={`mx-auto ${maxWidth} space-y-6`}>
+          {loadingHistory ? (
+            <div className="space-y-5">
+              <div className="h-20 w-3/4 animate-pulse rounded-2xl bg-slate-100/80 dark:bg-white/5" />
+              <div className="ml-auto h-14 w-1/2 animate-pulse rounded-2xl bg-slate-100/80 dark:bg-white/5" />
             </div>
           ) : (
             messages.map((m, i) => {
@@ -176,44 +295,99 @@ export function AssistantChatBox({
                 minute: "2-digit",
               });
 
+              /* ---------- USER : bulle dégradé primary ---------- */
               if (isUser) {
                 return (
                   <div key={m.id} className="flex justify-end">
-                    <div className="max-w-[80%]">
-                      <div className={`rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 ${messageText} leading-relaxed text-white dark:bg-accent`}>
+                    <div className="max-w-[75%]">
+                      <div
+                        className="
+                          rounded-[22px] rounded-br-md px-4 py-3 text-[14px]
+                          leading-relaxed text-white
+                          bg-gradient-to-br from-primary to-primary-light
+                          shadow-[0_8px_24px_-10px_rgba(18,25,74,0.4)]
+                          dark:from-accent dark:to-accent-light
+                          dark:shadow-[0_8px_24px_-10px_rgba(242,106,27,0.5)]
+                        "
+                      >
                         {m.content}
                       </div>
-                      <p className="mt-1 pr-1 text-right text-[10px] text-slate-400 dark:text-white/30">{time}</p>
+                      <p className="mt-1.5 pr-2 text-right text-[10px] font-medium text-slate-400 dark:text-white/30">
+                        {time}
+                      </p>
                     </div>
                   </div>
                 );
               }
 
+              /* ---------- ASSISTANT : bulle blanche translucide ---------- */
               return (
-                <div key={m.id} className="flex gap-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/5 dark:bg-white/5">
-                    <Sparkles size={13} className="text-accent" strokeWidth={2} />
+                <div key={m.id} className="group flex gap-3">
+                  {/* Avatar */}
+                  <div
+                    className="
+                      flex h-8 w-8 shrink-0 items-center justify-center rounded-full
+                      bg-gradient-to-br from-accent to-accent-light
+                      shadow-[0_4px_12px_-4px_rgba(242,106,27,0.5)]
+                    "
+                  >
+                    <span className="text-[11px] font-bold text-white">Z</span>
                   </div>
+
                   <div className="min-w-0 flex-1">
-                    <div className="rounded-2xl rounded-tl-sm border border-slate-200 bg-slate-50/60 px-4 py-2.5 dark:border-white/10 dark:bg-white/[0.03]">
-                      <div className={`whitespace-pre-wrap ${messageText} leading-relaxed text-slate-700 dark:text-white/85`}>
+                    <div
+                      className="
+                        rounded-[22px] rounded-tl-md
+                        border border-slate-200/60 bg-white/80 px-4 py-3
+                        shadow-[0_4px_16px_-8px_rgba(18,25,74,0.1)]
+                        backdrop-blur-sm
+                        dark:border-white/[0.08] dark:bg-white/[0.05]
+                      "
+                    >
+                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-slate-700 dark:text-white/85">
                         {isLastAssistant ? (
-                          <TypewriterText key={m.id} text={m.content} speed={15} onTick={scrollToEnd} />
+                          <TypewriterText
+                            key={m.id}
+                            text={m.content}
+                            speed={15}
+                            onTick={scrollToEnd}
+                          />
                         ) : (
                           m.content
                         )}
                       </div>
                     </div>
 
-                    <div className="mt-1.5 flex items-center gap-3 pl-1 text-[10px] text-slate-400 dark:text-white/30">
-                      <span>{time}</span>
+                    {/* Actions au hover */}
+                    <div
+                      className="
+                        mt-1.5 flex items-center gap-3 pl-2 text-[10px]
+                        text-slate-400 opacity-0 transition-opacity duration-200
+                        group-hover:opacity-100 dark:text-white/30
+                      "
+                    >
+                      <span className="font-medium">{time}</span>
+                      <span className="text-slate-300 dark:text-white/15">·</span>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(m.id, m.content)}
-                        className="flex items-center gap-1 transition-colors hover:text-slate-600 dark:hover:text-white/70"
+                        className="
+                          flex items-center gap-1 rounded-md px-1.5 py-0.5
+                          transition-colors hover:bg-slate-100 hover:text-slate-600
+                          dark:hover:bg-white/[0.06] dark:hover:text-white/80
+                        "
                       >
-                        {copiedId === m.id ? <Check size={11} /> : <Copy size={11} />}
-                        {copiedId === m.id ? "Copié" : "Copier"}
+                        {copiedId === m.id ? (
+                          <>
+                            <Check size={11} strokeWidth={2.5} />
+                            Copié
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={11} />
+                            Copier
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -222,20 +396,34 @@ export function AssistantChatBox({
             })
           )}
 
+          {/* Typing */}
           {sending && (
-            <div className="flex gap-2.5">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/5 dark:bg-white/5">
-                <Sparkles size={13} className="text-accent" strokeWidth={2} />
+            <div className="flex gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-light shadow-[0_4px_12px_-4px_rgba(242,106,27,0.5)]">
+                <span className="text-[11px] font-bold text-white">Z</span>
               </div>
-              <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-slate-200 bg-slate-50/60 px-4 py-2.5 text-sm text-slate-400 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/40">
-                <Loader2 size={13} className="animate-spin" />
-                L'assistant réfléchit...
+              <div
+                className="
+                  flex items-center gap-2.5 rounded-[22px] rounded-tl-md
+                  border border-slate-200/60 bg-white/80 px-4 py-3
+                  backdrop-blur-sm
+                  dark:border-white/[0.08] dark:bg-white/[0.05]
+                "
+              >
+                <span className="flex gap-1">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/60 [animation-delay:-0.3s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/60 [animation-delay:-0.15s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/60" />
+                </span>
+                <span className="text-xs text-slate-400 dark:text-white/40">
+                  Réflexion…
+                </span>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+            <div className="rounded-xl border border-red-200/70 bg-red-50/80 px-4 py-2.5 text-xs text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
               {error}
             </div>
           )}
@@ -244,48 +432,8 @@ export function AssistantChatBox({
         </div>
       </div>
 
-      {/* ===== INPUT — fixe en bas ===== */}
-      <div className="border-t border-slate-200 px-4 py-3 dark:border-white/10">
-        <div className={`mx-auto w-full ${maxWidth}`}>
-          <div className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 transition-colors focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10 dark:border-white/10 dark:bg-white/5 dark:focus-within:border-accent/50 dark:focus-within:ring-accent/10">
-            <button
-              type="button"
-              title="Joindre un fichier"
-              className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/5 dark:hover:text-white/70"
-            >
-              <Paperclip size={15} />
-            </button>
-
-            <textarea
-              ref={inputRef}
-              rows={1}
-              value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-                handleAutoResize(e.target);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder={placeholder ?? "Posez votre question..."}
-              className="min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-white/30"
-            />
-
-            <button
-              type="button"
-              onClick={() => void handleSend()}
-              disabled={!message.trim() || sending}
-              aria-label="Envoyer"
-              className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-accent text-white transition-colors hover:bg-accent-light disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-            </button>
-          </div>
-
-          {!compact && (
-            <p className="mt-2 text-center text-[10px] text-slate-400 dark:text-white/30">
-              L'assistant peut faire des erreurs. Vérifiez les informations importantes.
-            </p>
-          )}
-        </div>
+      <div className="border-t border-slate-200/50 px-6 py-4 dark:border-white/[0.06]">
+        {inputBar}
       </div>
     </div>
   );

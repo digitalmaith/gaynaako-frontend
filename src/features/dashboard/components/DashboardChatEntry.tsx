@@ -1,10 +1,9 @@
-// src/features/assistant/components/DashboardChatEntry.tsx
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bot, Send } from "lucide-react";
 
 interface DashboardChatEntryProps {
-  suggestions?: string[];
+  readonly suggestions?: string[];
 }
 
 export function DashboardChatEntry({ suggestions }: DashboardChatEntryProps) {
@@ -16,7 +15,7 @@ export function DashboardChatEntry({ suggestions }: DashboardChatEntryProps) {
   const goToAssistant = (text: string) => {
     const value = text.trim();
     if (!value) return;
-    navigate("/app/assistant", { state: { initialMessage: value } });
+    navigate("/assistant", { state: { initialMessage: value } });
   };
 
   const handleSuggestion = (text: string) => {
