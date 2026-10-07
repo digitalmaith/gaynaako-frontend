@@ -9,7 +9,8 @@ import {
   ArrowUp,
 } from "lucide-react";
 import { useAssistantChat } from "../hooks/useAssistantChat";
-import { TypewriterText } from "./TypewriterText";
+import { TypewriterText, renderMarkdown } from "./TypewriterText";
+import { BrandLogo } from "@/shared/components/BrandLogo";
 import type { ChatContext } from "../types";
 
 interface AssistantChatBoxProps {
@@ -104,7 +105,7 @@ export function AssistantChatBox({
 
   const lastAssistantIndex = messages.reduce(
     (last, m, i) => (m.role === "assistant" ? i : last),
-    -1
+    -1,
   );
   const maxWidth = compact ? "max-w-2xl" : "max-w-3xl";
   const isEmpty = !loadingHistory && messages.length === 0;
@@ -212,16 +213,16 @@ export function AssistantChatBox({
   if (isEmpty) {
     return (
       <div className="flex h-full flex-col items-center justify-center overflow-hidden px-6">
-        {/* Mascotte — placeholder à remplacer par ton image */}
+        {/* Mascotte — logo Gaynaako */}
         <div className="relative mb-6 h-32 w-32">
           {/* Halo doux */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-accent/20 via-accent-light/10 to-primary/10 blur-2xl" />
-          {/* Image / illustration */}
+          {/* Logo */}
           <div className="relative flex h-full w-full items-center justify-center">
-            {/* TODO: remplacer par <img src="/mascot.png" /> */}
-            <div className="flex h-24 w-24 items-center justify-center rounded-[32px] bg-gradient-to-br from-accent to-accent-light shadow-[0_20px_50px_-15px_rgba(242,106,27,0.5)]">
-              <span className="font-display text-4xl font-bold text-white">Z</span>
-            </div>
+            <BrandLogo
+              size="lg"
+              className="h-24 w-24 rounded-[32px] shadow-[0_20px_50px_-15px_rgba(242,106,27,0.5)]"
+            />
           </div>
           {/* Étincelles */}
           <div className="absolute -right-1 top-2 h-1.5 w-1.5 animate-pulse rounded-full bg-accent/70" />
@@ -323,16 +324,8 @@ export function AssistantChatBox({
               /* ---------- ASSISTANT : bulle blanche translucide ---------- */
               return (
                 <div key={m.id} className="group flex gap-3">
-                  {/* Avatar */}
-                  <div
-                    className="
-                      flex h-8 w-8 shrink-0 items-center justify-center rounded-full
-                      bg-gradient-to-br from-accent to-accent-light
-                      shadow-[0_4px_12px_-4px_rgba(242,106,27,0.5)]
-                    "
-                  >
-                    <span className="text-[11px] font-bold text-white">Z</span>
-                  </div>
+                  {/* Avatar — logo Gaynaako */}
+                  <BrandLogo size="sm" />
 
                   <div className="min-w-0 flex-1">
                     <div
@@ -344,8 +337,8 @@ export function AssistantChatBox({
                         dark:border-white/[0.08] dark:bg-white/[0.05]
                       "
                     >
-                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-slate-700 dark:text-white/85">
-                        {isLastAssistant ? (
+                      <div className="text-[14px] leading-relaxed text-slate-700 dark:text-white/85">
+                        {isLastAssistant && m.isNew ? (
                           <TypewriterText
                             key={m.id}
                             text={m.content}
@@ -353,7 +346,12 @@ export function AssistantChatBox({
                             onTick={scrollToEnd}
                           />
                         ) : (
-                          m.content
+                          <div
+                            className="markdown-content"
+                            dangerouslySetInnerHTML={{
+                              __html: renderMarkdown(m.content),
+                            }}
+                          />
                         )}
                       </div>
                     </div>
@@ -396,12 +394,10 @@ export function AssistantChatBox({
             })
           )}
 
-          {/* Typing */}
+          {/* Typing — logo Gaynaako */}
           {sending && (
             <div className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-light shadow-[0_4px_12px_-4px_rgba(242,106,27,0.5)]">
-                <span className="text-[11px] font-bold text-white">Z</span>
-              </div>
+              <BrandLogo size="sm" />
               <div
                 className="
                   flex items-center gap-2.5 rounded-[22px] rounded-tl-md

@@ -1,17 +1,17 @@
 // src/features/assistant/pages/AssistantPage.tsx
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plus,
   PanelLeftClose,
   PanelLeftOpen,
   ChevronDown,
-  ArrowLeft, // ⬅️ nouveau
+  ArrowLeft,
 } from "lucide-react";
 import { assistantService } from "../services/assistant.service";
 import { ConversationList } from "../components/ConversationList";
 import { AssistantChatBox } from "../components/AssistantChatBox";
-import { BrandLogo } from "../components/BrandLogo";
+import { BrandLogo } from "../../../shared/components/BrandLogo";
 import { useAvailableHeight } from "@/shared/hooks/useAvailableHeight";
 import { useAuthStore } from "@/app/store/authStore";
 import { getAccountDisplay } from "@/features/auth/utils/getAccountDisplay";
@@ -31,11 +31,14 @@ export default function AssistantPage() {
   const availableHeight = useAvailableHeight(containerRef);
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const account = getAccountDisplay(user);
 
+  // 👇 activeId vient de l'URL (?conversation=xxx)
+  const activeId = searchParams.get("conversation") ?? undefined;
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeId, setActiveId] = useState<string | undefined>();
   const [loadingList, setLoadingList] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -49,6 +52,28 @@ export default function AssistantPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /**
+   * Met à jour l'URL pour refléter la conversation active.
+   * `replace: true` évite de polluer l'historique du navigateur.
+   */
+  const setActiveId = useCallback(
+    (id: string | undefined) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (id) {
+            next.set("conversation", id);
+          } else {
+            next.delete("conversation");
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   const loadConversations = useCallback(async () => {
     try {
@@ -68,20 +93,38 @@ export default function AssistantPage() {
     });
   }, [loadConversations]);
 
-  const handleDeleted = (id: string) => {
-    setConversations((prev) => prev.filter((c) => c.id !== id));
-    setActiveId((prev) => (prev === id ? undefined : prev));
-  };
+  const handleDeleted = useCallback(
+    (id: string) => {
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      if (activeId === id) {
+        setActiveId(undefined);
+      }
+    },
+    [activeId, setActiveId],
+  );
 
-  const handleConversationStart = (id: string) => {
-    setActiveId(id);
-    void loadConversations();
-  };
+  const handleConversationStart = useCallback(
+    (id: string) => {
+      // 👇 Met à jour l'URL pour que le refresh garde la conversation
+      setActiveId(id);
+      void loadConversations();
+    },
+    [setActiveId, loadConversations],
+  );
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      setActiveId(id);
+    },
+    [setActiveId],
+  );
+
+  const handleNewConversation = useCallback(() => {
+    setActiveId(undefined);
+  }, [setActiveId]);
 
   /* ---------- Navigation retour ---------- */
   const handleBack = () => {
-    // Si un historique existe, on revient en arrière,
-    // sinon fallback explicite vers le dashboard.
     if (window.history.length > 1) {
       navigate(-1);
     } else {
@@ -176,7 +219,7 @@ export default function AssistantPage() {
           {/* Actions */}
           <div className="mt-1 space-y-1 px-3">
             <button
-              onClick={() => setActiveId(undefined)}
+              onClick={handleNewConversation}
               className={cn(
                 "group flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5",
                 "bg-primary/5 text-slate-700 transition-all duration-200",
@@ -210,7 +253,7 @@ export default function AssistantPage() {
               <ConversationList
                 conversations={conversations}
                 activeId={activeId}
-                onSelect={setActiveId}
+                onSelect={handleSelect}
                 onDeleted={handleDeleted}
                 loading={loadingList}
               />
@@ -260,7 +303,6 @@ export default function AssistantPage() {
           {/* Header avec bouton retour + logo Gaynaako */}
           <header className="relative z-10 flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/50 px-5 py-3 dark:border-white/[0.06]">
             <div className="flex items-center gap-2">
-              {/* Bouton retour (header) */}
               <button
                 onClick={handleBack}
                 title="Retour au dashboard"

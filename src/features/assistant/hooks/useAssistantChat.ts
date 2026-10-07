@@ -5,10 +5,13 @@ import type { ChatContext, ChatMessage } from "../types";
 
 interface UseAssistantChatOptions {
   context?: ChatContext;
-  conversationId?: string; // charge l'historique si fourni
+  conversationId?: string;
 }
 
-export function useAssistantChat({ context, conversationId: initialId }: UseAssistantChatOptions = {}) {
+export function useAssistantChat({
+  context,
+  conversationId: initialId,
+}: UseAssistantChatOptions = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | undefined>(initialId);
   const [sending, setSending] = useState(false);
@@ -17,10 +20,12 @@ export function useAssistantChat({ context, conversationId: initialId }: UseAssi
 
   useEffect(() => {
     if (!initialId) return;
+
     queueMicrotask(async () => {
       setLoadingHistory(true);
       try {
         const detail = await assistantService.getConversation(initialId);
+        // 👇 Messages historiques : pas de `isNew` → affichage instantané
         setMessages(detail.messages);
         setConversationId(detail.id);
       } catch {
@@ -32,6 +37,7 @@ export function useAssistantChat({ context, conversationId: initialId }: UseAssi
   }, [initialId]);
 
   const send = async (text: string) => {
+    // Message utilisateur : instantané (pas de typewriter pour l'utilisateur)
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -49,7 +55,12 @@ export function useAssistantChat({ context, conversationId: initialId }: UseAssi
         context,
       });
       setConversationId(response.conversationId);
-      setMessages((prev) => [...prev, response.message]);
+
+      // 👇 Message assistant fraîchement reçu : `isNew: true` → effet typewriter
+      setMessages((prev) => [
+        ...prev,
+        { ...response.message, isNew: true },
+      ]);
     } catch {
       setError("L'assistant est momentanément indisponible.");
     } finally {
@@ -63,5 +74,13 @@ export function useAssistantChat({ context, conversationId: initialId }: UseAssi
     setError(null);
   };
 
-  return { messages, sending, loadingHistory, error, conversationId, send, reset };
+  return {
+    messages,
+    sending,
+    loadingHistory,
+    error,
+    conversationId,
+    send,
+    reset,
+  };
 }
