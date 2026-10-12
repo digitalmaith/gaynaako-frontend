@@ -7,7 +7,7 @@ import { RecentActivity, type ActivityItem } from "../components/RecentActivity"
 import { Skeleton } from "@/shared/components/Skeleton";
 import { useAuthStore } from "@/app/store/authStore";
 import { DashboardChatEntry } from "../components/DashboardChatEntry";
-import { useDashboardOpportunities } from "../hooks/useDashboardOpportunities";
+import { useDashboardRecommandations } from "../hooks/useDashboardRecommandations";
 
 const quickActions = [
   { label: "Rechercher", icon: Search, prompt: "Trouve-moi des opportunités correspondant à mon profil" },
@@ -17,7 +17,8 @@ const quickActions = [
 ];
 
 export default function DashboardPage() {
-  const { loading: loadingOpps, opportunities, error: oppsError } = useDashboardOpportunities();
+  // 🎯 Utilise le hook des recommandations au lieu des opportunités IA
+  const { loading: loadingOpps, opportunities, error: oppsError } = useDashboardRecommandations();
 
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
@@ -50,11 +51,11 @@ export default function DashboardPage() {
           <DashboardChatEntry suggestions={quickActions.map((a) => a.prompt)} />
         </div>
 
-        {/* Fil d'opportunités */}
+        {/* Fil de recommandations */}
         <div className="mt-8">
           <div className="flex items-center justify-between">
             <h2 className="font-medium text-slate-700 dark:text-white/80">
-              Fil d'opportunités
+              Recommandations pour vous
             </h2>
             <button className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:text-white/40 dark:hover:text-white/70">
               <SlidersHorizontal size={14} />
@@ -81,7 +82,7 @@ export default function DashboardPage() {
               ))
             ) : opportunities.length === 0 ? (
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/50">
-                Aucune opportunité disponible pour le moment.
+                Aucune recommandation disponible pour le moment.
               </div>
             ) : (
               opportunities.map((opp, i) => (

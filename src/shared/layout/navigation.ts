@@ -12,6 +12,7 @@ import {
   Bot,
   FolderOpen,
   type LucideIcon,
+  FileCheck,
 } from "lucide-react";
 
 export interface NavShortcut {
@@ -38,6 +39,7 @@ export const userSections: NavSection[] = [
       { to: "/app/candidatures", label: "Candidatures", icon: ClipboardList, dot: "bg-sky-500" },
       { to: "/app/documents", label: "Documents", icon: FileCheck2, dot: "bg-amber-500" },
       { to: "/assistant", label: "Assistant", icon: Bot, dot: "bg-violet-500" },
+      { to: "/app/brouillon", label: "Brouillon", icon: FileCheck, dot: "bg-red-800" },
     ],
   },
 ];
