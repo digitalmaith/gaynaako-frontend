@@ -1,29 +1,80 @@
-// src/features/profil/services/profile.service.ts
-import { api } from "@/shared/services/api";
-import type { Secteur, UpdatePmeProfilePayload, User } from "../types";
+import { api } from '@/shared/services/api';
+import type {
+  User,
+  SecteurRef,
+  PaysRef,
+  DomaineInterventionRef,
+  UpdateIdentityPayload,
+  UpdateEntrepreneurProfilePayload,
+  UpdatePmeProfilePayload,
+  UpdateOngProfilePayload,
+} from '../types';
 
 export const profileService = {
-  getMe: async (): Promise<User> => {
-    const { data } = await api.get<User>("/users/me");
+  async getMe(): Promise<User> {
+    const { data } = await api.get<User>('/users/me');
     return data;
   },
 
-  // ⚠️ verbe à confirmer (PATCH supposé)
-  updatePmeProfile: async (payload: UpdatePmeProfilePayload): Promise<User> => {
-    const formData = new FormData();
-    if (payload.nomEntreprise) formData.append("nomEntreprise", payload.nomEntreprise);
-    payload.secteurIds?.forEach((id) => formData.append("secteurIds", id));
-    if (payload.logo) formData.append("logo", payload.logo);
+  async updateIdentity(payload: UpdateIdentityPayload): Promise<User> {
+    const { data } = await api.patch<User>('/users/me/identity', payload);
+    return data;
+  },
 
-    const { data } = await api.patch<User>("/users/me/pme-profile", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+  async updateEntrepreneurProfile(payload: UpdateEntrepreneurProfilePayload): Promise<User> {
+    const { data } = await api.patch<User>('/users/me/entrepreneur-profile', payload);
+    return data;
+  },
+
+  async updatePmeProfile(payload: UpdatePmeProfilePayload): Promise<User> {
+    const { nomEntreprise, secteurIds } = payload;
+    const { data } = await api.patch<User>('/users/me/pme-profile', {
+      nomEntreprise,
+      secteurIds,
     });
     return data;
   },
 
-  // ⚠️ endpoint à confirmer côté backend
-  getSecteurs: async (): Promise<Secteur[]> => {
-    const { data } = await api.get<Secteur[]>("/secteurs");
+  async updateOngProfile(payload: UpdateOngProfilePayload): Promise<User> {
+    const { nomOrganisation, domaineInterventionIds, mission } = payload;
+    const { data } = await api.patch<User>('/users/me/ong-profile', {
+      nomOrganisation,
+      domaineInterventionIds,
+      mission,
+    });
+    return data;
+  },
+
+  async uploadAvatar(file: File): Promise<User> {
+    const form = new FormData();
+    form.append('avatar', file);
+    const { data } = await api.patch<User>('/users/me/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+
+  async uploadLogo(file: File): Promise<User> {
+    const form = new FormData();
+    form.append('logo', file);
+    const { data } = await api.patch<User>('/users/me/logo', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+
+  async getSecteurs(): Promise<SecteurRef[]> {
+    const { data } = await api.get<SecteurRef[]>('/reference/secteurs');
+    return data;
+  },
+
+  async getPays(): Promise<PaysRef[]> {
+    const { data } = await api.get<PaysRef[]>('/reference/pays');
+    return data;
+  },
+
+  async getDomainesIntervention(): Promise<DomaineInterventionRef[]> {
+    const { data } = await api.get<DomaineInterventionRef[]>('/reference/domaines-intervention');
     return data;
   },
 };

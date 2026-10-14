@@ -1,8 +1,13 @@
-// src/features/profil/hooks/useProfile.ts
-import { useCallback, useEffect, useState } from "react";
-import { profileService } from "../services/profile.service";
-import { useAuthStore } from "@/app/store/authStore";
-import type { UpdatePmeProfilePayload, User } from "../types";
+import { useCallback, useEffect, useState } from 'react';
+import { profileService } from '../services/profile.service';
+import { useAuthStore } from '@/app/store/authStore';
+import type {
+  UpdateIdentityPayload,
+  UpdatePmeProfilePayload,
+  UpdateEntrepreneurProfilePayload,
+  UpdateOngProfilePayload,
+  User,
+} from '../types';
 
 export function useProfile() {
   const setUser = useAuthStore((state) => state.setUser);
@@ -17,9 +22,9 @@ export function useProfile() {
     try {
       const data = await profileService.getMe();
       setLocalUser(data);
-      setUser(data); // synchronise le store global (topbar, sidebar...)
+      setUser(data);
     } catch {
-      setError("Impossible de charger votre profil pour le moment.");
+      setError('Impossible de charger votre profil pour le moment.');
     } finally {
       setLoading(false);
     }
@@ -31,10 +36,10 @@ export function useProfile() {
     });
   }, [fetchProfile]);
 
-  const updatePmeProfile = async (payload: UpdatePmeProfilePayload) => {
+  const applyUpdate = async (fn: () => Promise<User>) => {
     setSaving(true);
     try {
-      const updated = await profileService.updatePmeProfile(payload);
+      const updated = await fn();
       setLocalUser(updated);
       setUser(updated);
     } finally {
@@ -42,5 +47,21 @@ export function useProfile() {
     }
   };
 
-  return { user, loading, error, saving, refetch: fetchProfile, updatePmeProfile };
+  return {
+    user,
+    loading,
+    error,
+    saving,
+    refetch: fetchProfile,
+    updateIdentity: (payload: UpdateIdentityPayload) =>
+      applyUpdate(() => profileService.updateIdentity(payload)),
+    updateEntrepreneurProfile: (payload: UpdateEntrepreneurProfilePayload) =>
+      applyUpdate(() => profileService.updateEntrepreneurProfile(payload)),
+    updatePmeProfile: (payload: UpdatePmeProfilePayload) =>
+      applyUpdate(() => profileService.updatePmeProfile(payload)),
+    updateOngProfile: (payload: UpdateOngProfilePayload) =>
+      applyUpdate(() => profileService.updateOngProfile(payload)),
+    uploadAvatar: (file: File) => applyUpdate(() => profileService.uploadAvatar(file)),
+    uploadLogo: (file: File) => applyUpdate(() => profileService.uploadLogo(file)),
+  };
 }
