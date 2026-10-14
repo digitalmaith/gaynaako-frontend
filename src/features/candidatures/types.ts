@@ -1,48 +1,45 @@
 // src/features/candidatures/types.ts
 
-// ⚠️ valeurs à confirmer avec l'enum réel du backend — seule "BROUILLON" est confirmée
 export type CandidatureStatut =
-  | "BROUILLON"
-  | "SOUMISE"
-  | "EN_COURS_EXAMEN"
-  | "ACCEPTEE"
-  | "REJETEE"
-  | "EXPIREE";
+  | 'BROUILLON'
+  | 'SOUMISE'
+  | 'EN_COURS'
+  | 'ACCEPTEE'
+  | 'REJETEE';
 
-export interface Secteur {
+export interface OpportuniteScrapee {
   id: string;
-  nom: string;
-}
-
-export interface Emetteur {
-  id: string;
-  nom: string;
+  oldId: string | null;
+  sourceName: string;
+  sourceType: string;
+  title: string;
+  description: string | null;
   url: string;
-  type: string;
-  frequenceCollecte: string;
-  dernierScan: string | null;
-  statut: string;
-  administrateurId: string;
-}
-
-export interface Opportunite {
-  id: string;
-  externalId: string | null;
-  titre: string;
-  description: string;
-  type: string;
-  pays: string;
-  dateLimite: string;
-  criteresEligibilite: string;
-  origine: string;
-  dateCreation: string;
-  supprimeLe: string | null;
-  secteurId: string;
-  emetteurId: string;
-  administrateurId: string;
-  secteur: Secteur;
-  emetteur: Emetteur;
-  scoreMatching: number | null; 
+  dateOriginal: string | null;
+  dateNormalized: string | null;
+  country: string | null;
+  sectorId: number | null;
+  sectors: string | null;
+  opportunityType: string | null;
+  organization: string | null;
+  hasDescription: string | null;
+  hasDate: string | null;
+  qualityScore: number | null;
+  targetAudience: string | null;
+  experienceRequired: string | null;
+  budgetRange: string | null;
+  urgency: string | null;
+  complexityLevel: number | null;
+  suggestedProfiles: string | null;
+  deadline: string | null;
+  beneficiairesCibles: string | null;
+  criteresEligibilite: string | null;
+  montantFinancement: string | null;
+  documentsNecessaires: string | null;
+  informationsComplementaires: string | null;
+  collectedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Candidature {
@@ -52,7 +49,18 @@ export interface Candidature {
   dateCreation: string;
   utilisateurId: string;
   opportuniteId: string;
-  opportunite: Opportunite;
+  opportunite: OpportuniteScrapee | null;
+  scoreMatching: number | null; 
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface PaginationMeta {
@@ -62,6 +70,7 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
+// ⬇️ NOUVEAU (générique, réutilisable)
 export interface PaginatedResponse<T> {
   items: T[];
   meta: PaginationMeta;

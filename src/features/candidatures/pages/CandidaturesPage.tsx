@@ -50,15 +50,24 @@ export default function CandidaturesPage() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("tous");
   const [search, setSearch] = useState("");
 
-  const filtered = useMemo(() => {
-    return candidatures.filter((c) => {
-      const matchesFilter = activeFilter === "tous" || c.statut === activeFilter;
-      const matchesSearch = c.opportunite.titre
-        .toLowerCase()
-        .includes(search.toLowerCase());
-      return matchesFilter && matchesSearch;
-    });
-  }, [candidatures, activeFilter, search]);
+ const filtered = useMemo(() => {
+  const needle = search.trim().toLowerCase();
+  return candidatures.filter((c) => {
+    const matchesFilter = activeFilter === 'tous' || c.statut === activeFilter;
+    if (!needle) return matchesFilter;
+
+    const title = (c.opportunite?.title ?? '').toLowerCase();
+    const country = (c.opportunite?.country ?? '').toLowerCase();
+    const organization = (c.opportunite?.organization ?? '').toLowerCase();
+
+    const matchesSearch =
+      title.includes(needle) ||
+      country.includes(needle) ||
+      organization.includes(needle);
+
+    return matchesFilter && matchesSearch;
+  });
+}, [candidatures, activeFilter, search]);
 
   // 📊 Statistiques par statut
   const stats = useMemo(() => {

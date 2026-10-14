@@ -1,70 +1,50 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Send,
-  MessageCircle,
-  CheckCircle2,
-  Loader2,
-  X,
-} from 'lucide-react';
+import { Send, MessageCircle, CheckCircle2, Loader2, X } from 'lucide-react';
+import { candidaturesService } from '@/features/candidatures/services/candidatures.service';
 import type { OpportunityIa } from '../types/opportunity-ia';
 
 interface OpportunityDetailActionsProps {
   opportunity: OpportunityIa;
 }
 
-export function OpportunityDetailActions({
-  opportunity,
-}: OpportunityDetailActionsProps) {
+export function OpportunityDetailActions({ opportunity }: OpportunityDetailActionsProps) {
   const navigate = useNavigate();
   const [postulating, setPostulating] = useState(false);
   const [postulated, setPostulated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * 🎯 Candidater à cette opportunité
-   * → Redirige vers la page de candidature avec l'ID de l'opportunité
-   */
   const handlePostuler = async () => {
     setPostulating(true);
     setError(null);
 
     try {
-      // TODO: Appel API pour créer la candidature
-      // await candidaturesService.create({ opportuniteId: opportunity.id });
-
-      // Simulation d'un délai
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const candidature = await candidaturesService.create({
+        opportuniteId: opportunity.id,
+      });
 
       setPostulated(true);
 
-      // Redirection après 1.5s
       setTimeout(() => {
-        navigate(`/candidatures/nouvelle?opportuniteId=${opportunity.id}`);
-      }, 1500);
+        navigate(`/candidatures/${candidature.id}`);
+      }, 1200);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erreur inconnue';
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        (err instanceof Error ? err.message : 'Erreur inconnue');
       setError(`Impossible de candidater : ${msg}`);
     } finally {
       setPostulating(false);
     }
   };
 
-  /**
-   * 💬 Échanger avec le chatbot sur cette opportunité
-   * → Ouvre /assistant avec le contexte de l'opportunité
-   */
   const handleChatAboutOpportunity = () => {
-    // On passe l'ID de l'opportunité en query string
-    // Le chat pourra le récupérer et l'envoyer dans le contexte
     navigate(`/app/assistant?opportuniteId=${opportunity.id}`);
   };
 
   return (
     <>
-      {/* Actions principales */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        {/* 🎯 Candidater */}
         <button
           type="button"
           onClick={handlePostuler}
@@ -89,7 +69,6 @@ export function OpportunityDetailActions({
           )}
         </button>
 
-        {/* 💬 Discuter avec le chatbot */}
         <button
           type="button"
           onClick={handleChatAboutOpportunity}
@@ -100,7 +79,6 @@ export function OpportunityDetailActions({
         </button>
       </div>
 
-      {/* Erreur */}
       {error && (
         <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           <X size={14} />
