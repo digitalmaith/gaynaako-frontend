@@ -192,7 +192,7 @@ export default function DocumentsPage() {
       )}
 
       {viewTarget && (
-        <DocumentViewerModal document={viewTarget} onClose={() => setViewTarget(null)} />
+        <DocumentViewerModal doc={viewTarget} onClose={() => setViewTarget(null)} />
       )}
     </>
   );

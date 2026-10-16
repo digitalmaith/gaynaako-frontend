@@ -1,13 +1,6 @@
 // src/features/assistant/components/AssistantChatBox.tsx
 import { useEffect, useRef, useState } from "react";
-import {
-  Loader2,
-  Copy,
-  Check,
-  Mic,
-  Plus,
-  ArrowUp,
-} from "lucide-react";
+import { Loader2, Copy, Check, Mic, Plus, ArrowUp } from "lucide-react";
 import { useAssistantChat } from "../hooks/useAssistantChat";
 import { TypewriterText, renderMarkdown } from "./TypewriterText";
 import { BrandLogo } from "@/shared/components/BrandLogo";
@@ -20,6 +13,8 @@ interface AssistantChatBoxProps {
   initialMessage?: string;
   onConversationStart?: (conversationId: string) => void;
   compact?: boolean;
+  /** Masque la mascotte + suggestions (utile en sidebar) */
+  hideEmptyState?: boolean;
 }
 
 const SUGGESTIONS = [
@@ -36,6 +31,7 @@ export function AssistantChatBox({
   initialMessage,
   onConversationStart,
   compact = false,
+  hideEmptyState = false,
 }: AssistantChatBoxProps) {
   const {
     messages,
@@ -108,7 +104,9 @@ export function AssistantChatBox({
     -1,
   );
   const maxWidth = compact ? "max-w-2xl" : "max-w-3xl";
-  const isEmpty = !loadingHistory && messages.length === 0;
+
+  // ⬇️ isEmpty devient false si hideEmptyState = true → on saute l'empty state
+  const isEmpty = !loadingHistory && messages.length === 0 && !hideEmptyState;
 
   /* ================================================================ */
   /*  INPUT BAR — pilule large style ZAY-G                            */
@@ -127,21 +125,14 @@ export function AssistantChatBox({
           }
         `}
       >
-        {/* Bouton + rond */}
         <button
           type="button"
           title="Joindre"
-          className="
-            flex h-9 w-9 shrink-0 items-center justify-center rounded-full
-            text-slate-500 transition-all duration-200
-            hover:bg-slate-100 hover:text-slate-700
-            dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/90
-          "
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/90"
         >
           <Plus size={18} strokeWidth={2.2} />
         </button>
 
-        {/* Textarea */}
         <textarea
           ref={inputRef}
           rows={1}
@@ -154,42 +145,23 @@ export function AssistantChatBox({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder ?? "Écrivez votre message ici…"}
-          className="
-            min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-sm
-            leading-relaxed text-slate-700 outline-none
-            placeholder:text-slate-400/80
-            dark:text-white dark:placeholder:text-white/30
-          "
+          className="min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-relaxed text-slate-700 outline-none placeholder:text-slate-400/80 dark:text-white dark:placeholder:text-white/30"
         />
 
-        {/* Micro */}
         <button
           type="button"
           title="Message vocal"
-          className="
-            flex h-9 w-9 shrink-0 items-center justify-center rounded-full
-            text-slate-500 transition-all duration-200
-            hover:bg-slate-100 hover:text-slate-700
-            dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/90
-          "
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/90"
         >
           <Mic size={16} />
         </button>
 
-        {/* Envoyer */}
         <button
           type="button"
           onClick={() => void handleSend()}
           disabled={!message.trim() || sending}
           aria-label="Envoyer"
-          className="
-            flex h-9 w-9 shrink-0 items-center justify-center rounded-full
-            bg-primary text-white
-            transition-all duration-200
-            hover:bg-primary-light hover:scale-105 active:scale-95
-            disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100
-            dark:bg-accent dark:hover:bg-accent-light
-          "
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white transition-all duration-200 hover:bg-primary-light hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100 dark:bg-accent dark:hover:bg-accent-light"
         >
           {sending ? (
             <Loader2 size={15} className="animate-spin" />
@@ -213,18 +185,14 @@ export function AssistantChatBox({
   if (isEmpty) {
     return (
       <div className="flex h-full flex-col items-center justify-center overflow-hidden px-6">
-        {/* Mascotte — logo Gaynaako */}
         <div className="relative mb-6 h-32 w-32">
-          {/* Halo doux */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-accent/20 via-accent-light/10 to-primary/10 blur-2xl" />
-          {/* Logo */}
           <div className="relative flex h-full w-full items-center justify-center">
             <BrandLogo
               size="lg"
               className="h-24 w-24 rounded-[32px] shadow-[0_20px_50px_-15px_rgba(242,106,27,0.5)]"
             />
           </div>
-          {/* Étincelles */}
           <div className="absolute -right-1 top-2 h-1.5 w-1.5 animate-pulse rounded-full bg-accent/70" />
           <div
             className="absolute -left-1 bottom-4 h-1 w-1 animate-pulse rounded-full bg-primary/50"
@@ -236,7 +204,6 @@ export function AssistantChatBox({
           />
         </div>
 
-        {/* Titre */}
         <h1 className="text-center font-display text-2xl font-semibold leading-tight tracking-tight text-slate-800 dark:text-white sm:text-[32px]">
           Comment puis-je{" "}
           <span className="bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">
@@ -245,23 +212,13 @@ export function AssistantChatBox({
           aujourd'hui&nbsp;?
         </h1>
 
-        {/* Suggestions pilules */}
         <div className="mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
           {SUGGESTIONS.map(({ icon, text }) => (
             <button
               key={text}
               type="button"
               onClick={() => void handleSend(text)}
-              className="
-                flex items-center gap-2 rounded-full
-                border border-slate-200/70 bg-white/70 px-4 py-2.5
-                text-[13px] font-medium text-slate-600 backdrop-blur
-                shadow-[0_2px_10px_-4px_rgba(18,25,74,0.08)]
-                transition-all duration-200
-                hover:-translate-y-0.5 hover:border-accent/40 hover:bg-accent/[0.04] hover:text-accent hover:shadow-md
-                dark:border-white/10 dark:bg-white/[0.04] dark:text-white/70
-                dark:hover:border-accent/40 dark:hover:bg-accent/10 dark:hover:text-white
-              "
+              className="flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/70 px-4 py-2.5 text-[13px] font-medium text-slate-600 backdrop-blur shadow-[0_2px_10px_-4px_rgba(18,25,74,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:bg-accent/[0.04] hover:text-accent hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:text-white/70 dark:hover:border-accent/40 dark:hover:bg-accent/10 dark:hover:text-white"
             >
               <span className="text-base">{icon}</span>
               {text}
@@ -269,7 +226,6 @@ export function AssistantChatBox({
           ))}
         </div>
 
-        {/* Input */}
         <div className="mt-10 w-full">{inputBar}</div>
       </div>
     );
@@ -280,7 +236,9 @@ export function AssistantChatBox({
   /* ================================================================ */
   return (
     <div className="grid h-full grid-rows-[1fr_auto] overflow-hidden">
-      <div className="min-h-0 overflow-y-auto px-6 py-8">
+      <div
+        className={`min-h-0 overflow-y-auto ${compact ? "px-4 py-4" : "px-6 py-8"}`}
+      >
         <div className={`mx-auto ${maxWidth} space-y-6`}>
           {loadingHistory ? (
             <div className="space-y-5">
@@ -296,21 +254,11 @@ export function AssistantChatBox({
                 minute: "2-digit",
               });
 
-              /* ---------- USER : bulle dégradé primary ---------- */
               if (isUser) {
                 return (
                   <div key={m.id} className="flex justify-end">
                     <div className="max-w-[75%]">
-                      <div
-                        className="
-                          rounded-[22px] rounded-br-md px-4 py-3 text-[14px]
-                          leading-relaxed text-white
-                          bg-gradient-to-br from-primary to-primary-light
-                          shadow-[0_8px_24px_-10px_rgba(18,25,74,0.4)]
-                          dark:from-accent dark:to-accent-light
-                          dark:shadow-[0_8px_24px_-10px_rgba(242,106,27,0.5)]
-                        "
-                      >
+                      <div className="rounded-[22px] rounded-br-md px-4 py-3 text-[14px] leading-relaxed text-white bg-gradient-to-br from-primary to-primary-light shadow-[0_8px_24px_-10px_rgba(18,25,74,0.4)] dark:from-accent dark:to-accent-light dark:shadow-[0_8px_24px_-10px_rgba(242,106,27,0.5)]">
                         {m.content}
                       </div>
                       <p className="mt-1.5 pr-2 text-right text-[10px] font-medium text-slate-400 dark:text-white/30">
@@ -321,22 +269,12 @@ export function AssistantChatBox({
                 );
               }
 
-              /* ---------- ASSISTANT : bulle blanche translucide ---------- */
               return (
                 <div key={m.id} className="group flex gap-3">
-                  {/* Avatar — logo Gaynaako */}
                   <BrandLogo size="sm" />
 
                   <div className="min-w-0 flex-1">
-                    <div
-                      className="
-                        rounded-[22px] rounded-tl-md
-                        border border-slate-200/60 bg-white/80 px-4 py-3
-                        shadow-[0_4px_16px_-8px_rgba(18,25,74,0.1)]
-                        backdrop-blur-sm
-                        dark:border-white/[0.08] dark:bg-white/[0.05]
-                      "
-                    >
+                    <div className="rounded-[22px] rounded-tl-md border border-slate-200/60 bg-white/80 px-4 py-3 shadow-[0_4px_16px_-8px_rgba(18,25,74,0.1)] backdrop-blur-sm dark:border-white/[0.08] dark:bg-white/[0.05]">
                       <div className="text-[14px] leading-relaxed text-slate-700 dark:text-white/85">
                         {isLastAssistant && m.isNew ? (
                           <TypewriterText
@@ -356,24 +294,13 @@ export function AssistantChatBox({
                       </div>
                     </div>
 
-                    {/* Actions au hover */}
-                    <div
-                      className="
-                        mt-1.5 flex items-center gap-3 pl-2 text-[10px]
-                        text-slate-400 opacity-0 transition-opacity duration-200
-                        group-hover:opacity-100 dark:text-white/30
-                      "
-                    >
+                    <div className="mt-1.5 flex items-center gap-3 pl-2 text-[10px] text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:text-white/30">
                       <span className="font-medium">{time}</span>
                       <span className="text-slate-300 dark:text-white/15">·</span>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(m.id, m.content)}
-                        className="
-                          flex items-center gap-1 rounded-md px-1.5 py-0.5
-                          transition-colors hover:bg-slate-100 hover:text-slate-600
-                          dark:hover:bg-white/[0.06] dark:hover:text-white/80
-                        "
+                        className="flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/[0.06] dark:hover:text-white/80"
                       >
                         {copiedId === m.id ? (
                           <>
@@ -394,18 +321,10 @@ export function AssistantChatBox({
             })
           )}
 
-          {/* Typing — logo Gaynaako */}
           {sending && (
             <div className="flex gap-3">
               <BrandLogo size="sm" />
-              <div
-                className="
-                  flex items-center gap-2.5 rounded-[22px] rounded-tl-md
-                  border border-slate-200/60 bg-white/80 px-4 py-3
-                  backdrop-blur-sm
-                  dark:border-white/[0.08] dark:bg-white/[0.05]
-                "
-              >
+              <div className="flex items-center gap-2.5 rounded-[22px] rounded-tl-md border border-slate-200/60 bg-white/80 px-4 py-3 backdrop-blur-sm dark:border-white/[0.08] dark:bg-white/[0.05]">
                 <span className="flex gap-1">
                   <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/60 [animation-delay:-0.3s]" />
                   <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/60 [animation-delay:-0.15s]" />
@@ -428,7 +347,9 @@ export function AssistantChatBox({
         </div>
       </div>
 
-      <div className="border-t border-slate-200/50 px-6 py-4 dark:border-white/[0.06]">
+      <div
+        className={`border-t border-slate-200/50 dark:border-white/[0.06] ${compact ? "px-3 py-3" : "px-6 py-4"}`}
+      >
         {inputBar}
       </div>
     </div>

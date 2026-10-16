@@ -36,21 +36,30 @@ interface BackendHistoryMessage {
 
 export const assistantService = {
   sendMessage: async (payload: SendMessagePayload): Promise<SendMessageResponse> => {
-    const { data } = await api.post<BackendChatResponse>("/chat", {
-      message: payload.message,
-      session_id: payload.conversationId,
-    });
+  const { data } = await api.post<BackendChatResponse>('/chat', {
+    message: payload.message,
+    session_id: payload.conversationId,
+    // ⬇️ AJOUTER le contexte
+    ...(payload.context
+      ? {
+          context: {
+            candidature_id: payload.context.candidatureId,
+            opportunite_id: payload.context.opportuniteId,
+          },
+        }
+      : {}),
+  });
 
-    return {
-      conversationId: data.session_id,
-      message: {
-        id: `${data.session_id}-${Date.now()}`,
-        role: "assistant",
-        content: data.message,
-        createdAt: new Date().toISOString(),
-      },
-    };
-  },
+  return {
+    conversationId: data.session_id,
+    message: {
+      id: `${data.session_id}-${Date.now()}`,
+      role: "assistant",
+      content: data.message,
+      createdAt: new Date().toISOString(),
+    },
+  };
+},
 
   listConversations: async (): Promise<Conversation[]> => {
     const { data } = await api.get<{ sessions: BackendSession[] } | BackendSession[]>(
