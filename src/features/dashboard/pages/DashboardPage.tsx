@@ -1,6 +1,14 @@
 // src/features/dashboard/pages/DashboardPage.tsx
 import { useEffect, useState } from "react";
-import { Search, Bot, FileCheck2, ClipboardList, SlidersHorizontal } from "lucide-react";
+import {
+  Search,
+  Bot,
+  FileCheck2,
+  ClipboardList,
+  SlidersHorizontal,
+} from "lucide-react";
+
+// Composants existants
 import { OpportunityFeedItem } from "../components/OpportunityFeedItem";
 import { InsightPromoCard } from "../components/InsightPromoCard";
 import { RecentActivity, type ActivityItem } from "../components/RecentActivity";
@@ -8,6 +16,12 @@ import { Skeleton } from "@/shared/components/Skeleton";
 import { useAuthStore } from "@/app/store/authStore";
 import { DashboardChatEntry } from "../components/DashboardChatEntry";
 import { useDashboardRecommandations } from "../hooks/useDashboardRecommandations";
+
+// ✨ Composants de Stratégie IA
+import { useUserStrategy } from "../hooks/useUserStrategy";
+import { StrategySynthesisCard } from "../components/StrategySynthesisCard";
+import { StrategyRoadmap } from "../components/StrategyRoadmap";
+import { GapAnalysisCard } from "../components/GapAnalysisCard";
 
 const quickActions = [
   { label: "Rechercher", icon: Search, prompt: "Trouve-moi des opportunités correspondant à mon profil" },
@@ -17,14 +31,21 @@ const quickActions = [
 ];
 
 export default function DashboardPage() {
-  // 🎯 Utilise le hook des recommandations au lieu des opportunités IA
-  const { loading: loadingOpps, opportunities, error: oppsError } = useDashboardRecommandations();
+  // 1. Recommandations (existant)
+  const {
+    loading: loadingOpps,
+    opportunities,
+    error: oppsError,
+  } = useDashboardRecommandations();
+
+  // 2. Stratégie IA (nouveau)
+  const { data: strategy, loading: loadingStrategy } = useUserStrategy();
 
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const user = useAuthStore((state) => state.user);
 
-  // 🎯 Activité récente : encore statique (pas d'API pour l'instant)
+  // Activité récente (mock temporaire, à remplacer par de vraies données plus tard)
   useEffect(() => {
     const timer = setTimeout(() => {
       setActivity([
@@ -40,18 +61,28 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto flex max-w-350 gap-6">
+      {/* ========================================================= */}
       {/* Colonne principale */}
+      {/* ========================================================= */}
       <div className="min-w-0 flex-1">
         <h1 className="font-display text-2xl font-semibold text-slate-800 dark:text-white">
           Bonjour {user?.prenom ?? ""}
         </h1>
+
+        {/* 🎯 Synthèse IA (stratégie personnalisée) */}
+        <div className="mt-5">
+          <StrategySynthesisCard
+            synthesis={strategy?.synthesis ?? null}
+            loading={loadingStrategy}
+          />
+        </div>
 
         {/* Barre de recherche / assistant */}
         <div className="mt-5">
           <DashboardChatEntry suggestions={quickActions.map((a) => a.prompt)} />
         </div>
 
-        {/* Fil de recommandations */}
+        {/* Fil de recommandations (existant) */}
         <div className="mt-8">
           <div className="flex items-center justify-between">
             <h2 className="font-medium text-slate-700 dark:text-white/80">
@@ -97,9 +128,24 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Right rail */}
+      {/* ========================================================= */}
+      {/* Right rail (colonne de droite) */}
+      {/* ========================================================= */}
       <aside className="hidden w-80 shrink-0 space-y-5 xl:block">
+        {/* 🎯 Roadmap stratégique (déplacée ici) */}
+        <StrategyRoadmap
+          roadmap={strategy?.roadmap ?? null}
+          loading={loadingStrategy}
+        />
+
+        {/* 🎯 Gap Analysis (compétences à valoriser) */}
+        <GapAnalysisCard
+          gapAnalysis={strategy?.gapAnalysis ?? null}
+          loading={loadingStrategy}
+        />
+
         <InsightPromoCard />
+
         {loadingActivity ? (
           <Skeleton className="h-40 w-full rounded-xl" />
         ) : (
