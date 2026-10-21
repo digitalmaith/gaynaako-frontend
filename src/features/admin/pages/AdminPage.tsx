@@ -6,6 +6,10 @@ import {
   Check,
   MoreHorizontal,
   Plus,
+  FileText,
+  Sparkles,
+  Zap,
+  Heart,
 } from "lucide-react";
 import {
   BarChart,
@@ -15,35 +19,19 @@ import {
   AreaChart,
   Area,
   Tooltip,
+  Cell,
 } from "recharts";
 import { Skeleton } from "@/shared/components/Skeleton";
 import { useAdminOverview } from "../hooks/useAdminOverview";
 
 // ─────────────────────────────────────────────
-// Mock data
+// Mock data (uniquement ce qui n'a pas d'API)
 // ─────────────────────────────────────────────
-const WEEKLY_BARS = [
-  { day: "L", a: 40, b: 20 },
-  { day: "M", a: 55, b: 30 },
-  { day: "M", a: 30, b: 15 },
-  { day: "J", a: 70, b: 35 },
-  { day: "V", a: 45, b: 25 },
-  { day: "S", a: 60, b: 30 },
-  { day: "D", a: 35, b: 18 },
-];
-
 const TREND_DATA = [
   { x: 1, y: 20 }, { x: 2, y: 45 }, { x: 3, y: 30 },
   { x: 4, y: 55 }, { x: 5, y: 48 }, { x: 6, y: 70 },
   { x: 7, y: 65 }, { x: 8, y: 85 }, { x: 9, y: 78 },
   { x: 10, y: 95 },
-];
-
-const RECENT_USERS = [
-  { nom: "Aminata Diop", email: "aminata@example.com", role: "PME", delta: "+12%", positive: true },
-  { nom: "Ousmane Ba", email: "ousmane@example.com", role: "PME", delta: "-3%", positive: false },
-  { nom: "Fatou Ndiaye", email: "fatou@example.com", role: "PME", delta: "+8%", positive: true },
-  { nom: "Admin Gaynaako", email: "admin@gaynaako.test", role: "ADMIN", delta: "+2%", positive: true },
 ];
 
 const ACTIVITY_LOG = [
@@ -52,6 +40,38 @@ const ACTIVITY_LOG = [
   { id: 3, time: "Lundi 14h45", title: "Document expiré", desc: "Attestation fiscale à renouveler", done: false },
 ];
 
+// ─────────────────────────────────────────────
+// Constantes visuelles
+// ─────────────────────────────────────────────
+const ROLE_LABELS: Record<string, string> = {
+  ENTREPRENEUR: "Entrep.",
+  PME: "PME",
+  ONG: "ONG",
+  ADMINISTRATEUR: "Admin",
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  ENTREPRENEUR: "#3B82F6",
+  PME: "#F26A1B",
+  ONG: "#10B981",
+  ADMINISTRATEUR: "#8B5CF6",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  BROUILLON: "Brouillon",
+  SOUMISE: "Soumise",
+  EN_COURS: "En cours",
+  ACCEPTEE: "Acceptée",
+  REJETEE: "Rejetée",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  BROUILLON: "#94A3B8",
+  SOUMISE: "#3B82F6",
+  EN_COURS: "#F59E0B",
+  ACCEPTEE: "#10B981",
+  REJETEE: "#EF4444",
+};
 
 // ─────────────────────────────────────────────
 // Page
@@ -69,11 +89,28 @@ export default function AdminPage() {
     );
   }
 
+  // ─── Données dérivées ───
+  const roleData = data
+    ? Object.entries(data.utilisateurs.parRole).map(([role, count]) => ({
+        label: ROLE_LABELS[role] ?? role,
+        count,
+        fill: ROLE_COLORS[role] ?? "#94A3B8",
+      }))
+    : [];
+
+  const statusData = data
+    ? Object.entries(data.candidatures.parStatut).map(([status, count]) => ({
+        label: STATUS_LABELS[status] ?? status,
+        count,
+        fill: STATUS_COLORS[status] ?? "#94A3B8",
+      }))
+    : [];
+
   return (
     <div className="space-y-5 text-slate-900 dark:text-white">
-      {/* ═══════════ LIGNE 1 : Balance + Report + Transactions ═══════════ */}
+      {/* ═══════════ LIGNE 1 : Balance + Activité + Base de données ═══════════ */}
       <section className="grid gap-5 lg:grid-cols-3">
-        {/* ─── Balance (avec gauge) ─── */}
+        {/* ─── Total utilisateurs (avec gauge) ─── */}
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/2 dark:shadow-none">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500 dark:text-white/60">
@@ -124,7 +161,9 @@ export default function AdminPage() {
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-end pb-2 text-center">
                   <p className="text-xs font-semibold text-slate-800 dark:text-white">
-                    Croissance modérée
+                    {data.utilisateurs.nouveauxDerniers7Jours > 0
+                      ? `+${data.utilisateurs.nouveauxDerniers7Jours} cette semaine`
+                      : "Stable"}
                   </p>
                   <p className="text-[10px] text-slate-400 dark:text-white/40">
                     Dernière mise à jour : aujourd'hui
@@ -135,28 +174,28 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* ─── Report (bar chart vertical) ─── */}
+        {/* ─── Activité (bar chart par rôle) ─── */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/2 dark:shadow-none">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500 dark:text-white/60">
-              Activité
+              Répartition par rôle
             </p>
             <p className="text-xs text-slate-400 dark:text-white/40">
-              7 derniers jours
+              {data?.utilisateurs.total ?? 0} utilisateurs
             </p>
           </div>
 
-          {loading ? (
+          {loading || !data ? (
             <Skeleton className="mt-4 h-40 w-full rounded-xl" />
           ) : (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart
-                data={WEEKLY_BARS}
+                data={roleData}
                 margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
                 barGap={4}
               >
                 <XAxis
-                  dataKey="day"
+                  dataKey="label"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 10, fill: "currentColor" }}
@@ -172,125 +211,155 @@ export default function AdminPage() {
                     fontSize: 11,
                   }}
                 />
-                <Bar dataKey="a" radius={[6, 6, 0, 0]} fill="#F26A1B" />
-                <Bar dataKey="b" radius={[6, 6, 0, 0]} fill="#3B82F6" />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                  {roleData.map((entry) => (
+                    <Cell key={entry.label} fill={entry.fill} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}
 
           <div className="mt-3 flex items-center justify-between text-xs">
             <span className="text-slate-400 dark:text-white/40">
-              Cette semaine
+              Actifs
             </span>
-            <span className="font-semibold text-accent">+350 / 640</span>
+            <span className="font-semibold text-accent">
+              {data?.utilisateurs.parStatut.ACTIF ?? 0} / {data?.utilisateurs.total ?? 0}
+            </span>
           </div>
         </div>
 
-        {/* ─── Transactions (liste) ─── */}
+        {/* ─── Base de données (stats) ─── */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/2 dark:shadow-none">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500 dark:text-white/60">
-              Opportunités
+              Base de données
             </p>
             <Link
-              to="/app/admin/users"
+              to="/app/admin/opportunites"
               className="text-xs text-slate-400 hover:text-slate-700 dark:text-white/40 dark:hover:text-white"
             >
-              Voir tout (4)
+              Voir tout
             </Link>
           </div>
 
-          <ul className="mt-4 space-y-1">
-            {loading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <li key={i}>
-                    <Skeleton className="h-12 w-full rounded-lg" />
-                  </li>
-                ))
-              : RECENT_USERS.slice(0, 3).map((u) => (
-                  <li
-                    key={u.email}
-                    className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
-                  >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-accent text-xs font-bold text-white">
-                      {u.nom.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium text-slate-800 dark:text-white">
-                        {u.nom}
-                      </p>
-                      <p className="truncate text-[10px] text-slate-400 dark:text-white/40">
-                        Inscrit aujourd'hui
-                      </p>
-                    </div>
-                    <p
-                      className={`text-xs font-semibold ${
-                        u.positive
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-rose-600 dark:text-rose-400"
-                      }`}
-                    >
-                      {u.delta}
-                    </p>
-                  </li>
-                ))}
-          </ul>
+          {loading || !data ? (
+            <div className="mt-4 space-y-3">
+              <Skeleton className="h-12 w-full rounded-lg" />
+              <Skeleton className="h-12 w-full rounded-lg" />
+              <Skeleton className="h-12 w-full rounded-lg" />
+              <Skeleton className="h-12 w-full rounded-lg" />
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-2">
+              <li className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2.5 dark:border-white/5">
+                <div className="flex items-center gap-2">
+                  <FileText size={13} className="text-slate-400" />
+                  <span className="text-xs font-medium text-slate-600 dark:text-white/70">
+                    Opportunités scrapées
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-slate-800 dark:text-white">
+                  {data.opportunites.total}
+                </span>
+              </li>
+
+              <li className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2.5 dark:border-white/5">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={13} className="text-accent" />
+                  <span className="text-xs font-medium text-slate-600 dark:text-white/70">
+                    Recommandations IA
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-slate-800 dark:text-white">
+                  {data.recommandations.total}
+                </span>
+              </li>
+
+              <li className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2.5 dark:border-white/5">
+                <div className="flex items-center gap-2">
+                  <Zap size={13} className="text-slate-400" />
+                  <span className="text-xs font-medium text-slate-600 dark:text-white/70">
+                    Émetteurs
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-slate-800 dark:text-white">
+                  {data.emetteurs.total}
+                </span>
+              </li>
+
+              <li className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2.5 dark:border-white/5">
+                <div className="flex items-center gap-2">
+                  <Heart size={13} className="text-rose-500" />
+                  <span className="text-xs font-medium text-slate-600 dark:text-white/70">
+                    Favoris
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-slate-800 dark:text-white">
+                  {data.favoris.total}
+                </span>
+              </li>
+            </ul>
+          )}
         </div>
       </section>
 
-      {/* ═══════════ LIGNE 2 : Overview Analytics ═══════════ */}
+      {/* ═══════════ LIGNE 2 : Analytics candidatures + More ═══════════ */}
       <section className="grid gap-5 lg:grid-cols-5">
-        {/* ─── Carte avec bar chart multicolore + ligne ─── */}
+        {/* ─── Candidatures par statut ─── */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-3 dark:border-white/5 dark:bg-white/2 dark:shadow-none">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500 dark:text-white/60">
-              Analytics des candidatures
+              Candidatures par statut
             </p>
-            <button className="text-xs text-slate-400 hover:text-slate-700 dark:text-white/40 dark:hover:text-white">
-              Plus
-            </button>
+            <Link
+              to="/app/admin/candidatures"
+              className="text-xs text-slate-400 hover:text-slate-700 dark:text-white/40 dark:hover:text-white"
+            >
+              Voir tout
+            </Link>
           </div>
 
           <div className="mt-4">
-            {loading ? (
+            {loading || !data ? (
               <Skeleton className="h-40 w-full rounded-xl" />
+            ) : statusData.length === 0 ? (
+              <div className="flex h-40 items-center justify-center">
+                <p className="text-xs text-slate-400 dark:text-white/40">
+                  Aucune candidature
+                </p>
+              </div>
             ) : (
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart
-                  data={WEEKLY_BARS}
+                  data={statusData}
                   barGap={2}
                   margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
                 >
-                  <Bar dataKey="a" radius={[4, 4, 0, 0]} fill="#F26A1B" />
-                  <Bar dataKey="b" radius={[4, 4, 0, 0]} fill="#3B82F6" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-
-          <div className="-mt-8">
-            {loading ? (
-              <Skeleton className="h-20 w-full rounded-xl" />
-            ) : (
-              <ResponsiveContainer width="100%" height={80}>
-                <AreaChart
-                  data={TREND_DATA}
-                  margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="trend" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#F26A1B" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="#F26A1B" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="y"
-                    stroke="#F26A1B"
-                    strokeWidth={2}
-                    fill="url(#trend)"
+                  <XAxis
+                    dataKey="label"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "currentColor" }}
+                    className="text-slate-400 dark:text-white/30"
                   />
-                </AreaChart>
+                  <Tooltip
+                    cursor={{ fill: "rgba(148,163,184,0.1)" }}
+                    contentStyle={{
+                      background: "var(--tooltip-bg)",
+                      border: "1px solid var(--tooltip-border)",
+                      borderRadius: 8,
+                      color: "var(--tooltip-color)",
+                      fontSize: 11,
+                    }}
+                  />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {statusData.map((entry) => (
+                      <Cell key={entry.label} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>
@@ -298,14 +367,14 @@ export default function AdminPage() {
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-slate-400 dark:text-white/40">
               <span className="font-bold text-slate-800 dark:text-white">
-                610.5
+                {data?.candidatures.total ?? 0}
               </span>{" "}
-              candidatures moyennes / mois
+              candidatures au total
             </span>
           </div>
         </div>
 
-        {/* ─── Carte "More" (mini stats) ─── */}
+        {/* ─── Plus (mini stats) ─── */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2 dark:border-white/5 dark:bg-white/2 dark:shadow-none">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500 dark:text-white/60">
@@ -314,7 +383,7 @@ export default function AdminPage() {
             <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-white/60">
               <Users size={12} />
               <span className="font-semibold text-slate-800 dark:text-white">
-                45
+                {data?.candidatures.total ?? 0}
               </span>
               <span className="text-slate-400 dark:text-white/40">
                 Candidatures
@@ -325,7 +394,7 @@ export default function AdminPage() {
           <div className="mt-4 space-y-3">
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/50">
               <TrendingUp size={12} className="text-accent" />
-              <span>3 déc. 2025 · Dernière activité</span>
+              <span>Dernière mise à jour : aujourd'hui</span>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/5 dark:bg-white/3">
@@ -333,79 +402,78 @@ export default function AdminPage() {
                 <p className="text-xs font-medium text-slate-700 dark:text-white/70">
                   Créer un utilisateur
                 </p>
-                <button className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20">
+                <Link
+                  to="/app/admin/users"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20"
+                >
                   <Plus size={12} />
-                </button>
+                </Link>
               </div>
               <p className="mt-1 text-[10px] text-slate-400 dark:text-white/40">
                 Invitez un nouveau membre sur la plateforme
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/5 dark:bg-white/2">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-accent text-sm font-bold text-white">
-                N
+            {/* Top rôle */}
+            {data && roleData.length > 0 && (
+              <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/5 dark:bg-white/2">
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                  style={{
+                    background: `linear-gradient(135deg, ${roleData[0].fill}, #F26A1B)`,
+                  }}
+                >
+                  {roleData[0].label.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-slate-800 dark:text-white">
+                    {roleData[0].label}
+                  </p>
+                  <p className="text-[10px] text-slate-400 dark:text-white/40">
+                    Rôle le plus représenté
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-white">
+                    {roleData[0].count}
+                  </p>
+                  <p className="text-[10px] text-accent">
+                    sur {data.utilisateurs.total}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium text-slate-800 dark:text-white">
-                  Nolan Geidt
-                </p>
-                <p className="text-[10px] text-slate-400 dark:text-white/40">
-                  nolan@gaynaako.test
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-semibold text-slate-800 dark:text-white">
-                  204.360
-                </p>
-                <p className="text-[10px] text-accent">+193.45</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ LIGNE 3 : Recent Sent + Timeline ═══════════ */}
+      {/* ═══════════ LIGNE 3 : Activité + Timeline ═══════════ */}
       <section className="grid gap-5 lg:grid-cols-3">
-        {/* ─── Recent Sent (courbe) ─── */}
+        {/* ─── Recommandations IA ─── */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2 dark:border-white/5 dark:bg-white/2 dark:shadow-none">
           <div className="flex items-start justify-between">
             <div>
               <p className="font-display text-lg font-bold text-slate-900 dark:text-white">
-                Activité récente
+                Recommandations IA
               </p>
               <p className="mt-0.5 text-xs text-slate-400 dark:text-white/40">
-                Bonne journée !
+                Générées par le moteur de matching
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-primary to-accent text-sm font-bold text-white">
-              A
+              <Sparkles size={16} />
             </div>
           </div>
 
-          <div className="mt-4 flex gap-1 overflow-x-auto">
-            {["22", "23", "24", "25 · Lun", "26", "27", "28"].map((d, i) => (
-              <button
-                key={d}
-                className={`shrink-0 rounded-lg px-2.5 py-1 text-xs transition ${
-                  i === 3
-                    ? "bg-slate-200 font-semibold text-slate-900 dark:bg-white/10 dark:text-white"
-                    : "text-slate-400 hover:bg-slate-100 dark:text-white/40 dark:hover:bg-white/5"
-                }`}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-
           <div className="relative mt-5">
-            <p className="text-center font-display text-2xl font-bold text-slate-900 dark:text-white">
-              1200{" "}
-              <span className="text-sm text-slate-400 dark:text-white/50">
-                USD
-              </span>
+            <p className="text-center font-display text-3xl font-bold text-slate-900 dark:text-white">
+              {data?.recommandations.total ?? 0}
             </p>
-            <div className="mt-2">
+            <p className="mt-1 text-center text-xs text-slate-400 dark:text-white/50">
+              recommandations au total
+            </p>
+
+            <div className="mt-4">
               {loading ? (
                 <Skeleton className="h-24 w-full rounded-xl" />
               ) : (
@@ -413,16 +481,8 @@ export default function AdminPage() {
                   <AreaChart data={TREND_DATA}>
                     <defs>
                       <linearGradient id="curve" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                          offset="0%"
-                          stopColor="#3B82F6"
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#3B82F6"
-                          stopOpacity={0}
-                        />
+                        <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <Area
@@ -437,9 +497,36 @@ export default function AdminPage() {
               )}
             </div>
           </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="rounded-lg border border-slate-100 p-3 text-center dark:border-white/5">
+              <p className="text-lg font-bold text-slate-800 dark:text-white">
+                {data?.opportunites.total ?? 0}
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40">
+                Opportunités
+              </p>
+            </div>
+            <div className="rounded-lg border border-slate-100 p-3 text-center dark:border-white/5">
+              <p className="text-lg font-bold text-slate-800 dark:text-white">
+                {data?.candidatures.total ?? 0}
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40">
+                Candidatures
+              </p>
+            </div>
+            <div className="rounded-lg border border-slate-100 p-3 text-center dark:border-white/5">
+              <p className="text-lg font-bold text-slate-800 dark:text-white">
+                {data?.favoris.total ?? 0}
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40">
+                Favoris
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* ─── Timeline Updates ─── */}
+        {/* ─── Timeline Mises à jour (mock) ─── */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/2 dark:shadow-none">
           <div className="flex items-center justify-between">
             <p className="font-display text-lg font-bold text-slate-900 dark:text-white">

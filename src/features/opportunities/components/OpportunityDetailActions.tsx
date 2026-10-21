@@ -26,7 +26,7 @@ export function OpportunityDetailActions({ opportunity }: OpportunityDetailActio
       setPostulated(true);
 
       setTimeout(() => {
-        navigate(`/candidatures/${candidature.id}`);
+        navigate(`/app/candidatures/${candidature.id}`);
       }, 1200);
     } catch (err: unknown) {
       const msg =
