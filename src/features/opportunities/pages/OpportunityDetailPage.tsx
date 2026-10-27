@@ -1,4 +1,3 @@
-// src/features/opportunities/pages/OpportunityDetailPage.tsx
 import { useParams, Link } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { useOpportunityIaDetail } from '../hooks/useOpportunityIaDetail';
@@ -7,27 +6,26 @@ import { OpportunityDetailInfo } from '../components/OpportunityDetailInfo';
 import { OpportunityDetailDescription } from '../components/OpportunityDetailDescription';
 import { OpportunityDetailSectors } from '../components/OpportunityDetailSectors';
 import { OpportunityDetailEligibility } from '../components/OpportunityDetailEligibility';
-import { OpportunityDetailActions } from '../components/OpportunityDetailActions';   // 👈
+import { OpportunityDetailActions } from '../components/OpportunityDetailActions';
+import { OpportunityMatchScore } from '../components/OpportunityMatchScore';
 
 export default function OpportunityDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { opportunity, loading, error } = useOpportunityIaDetail(id);
 
-  // ⏳ Loading
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={32} className="animate-spin text-[#1E2B7A]" />
           <p className="text-sm text-slate-500 dark:text-white/50">
-            Chargement de l'opportunité...
+            Analyse de votre profil par l'IA en cours...
           </p>
         </div>
       </div>
     );
   }
 
-  // ❌ Erreur
   if (error || !opportunity) {
     return (
       <div className="mx-auto max-w-2xl p-6">
@@ -39,7 +37,7 @@ export default function OpportunityDetailPage() {
             {error ?? 'Opportunité introuvable'}
           </p>
           <Link
-            to="/opportunities"
+            to="/app/opportunities"
             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
           >
             <ArrowLeft size={14} />
@@ -50,28 +48,37 @@ export default function OpportunityDetailPage() {
     );
   }
 
-  // ✅ Succès
+  // ✅ Plus besoin de 'any' : les champs sont typés dans OpportunityIa
+  const score = opportunity.matchScore ?? 0;
+  const label = opportunity.matchLabel ?? undefined;
+  const advice =
+    opportunity.matchAdvice ??
+    "Complétez votre profil pour que l'IA puisse calculer votre score de correspondance.";
+  const details = opportunity.matchDetails ?? undefined;
+
   return (
     <div className="mx-auto max-w-4xl p-6">
       <OpportunityDetailHeader opportunity={opportunity} />
 
-      
+      <div className="mt-6">
+        <OpportunityMatchScore
+          score={score}
+          categoryLabel={label}
+          advice={advice}
+          details={details}
+        />
+      </div>
 
       <div className="mt-6 space-y-6">
         <OpportunityDetailDescription description={opportunity.description} />
-
         <OpportunityDetailInfo opportunity={opportunity} />
-
         <OpportunityDetailSectors sectors={opportunity.sectors} />
-
         <OpportunityDetailEligibility
           criteresEligibilite={opportunity.criteresEligibilite}
           documentsNecessaires={opportunity.documentsNecessaires}
           beneficiairesCibles={opportunity.beneficiairesCibles}
         />
-
-        {/* 👇 NOUVEAU : actions (candidater + chatbot) */}
-      <OpportunityDetailActions opportunity={opportunity} />
+        <OpportunityDetailActions opportunity={opportunity} />
       </div>
     </div>
   );

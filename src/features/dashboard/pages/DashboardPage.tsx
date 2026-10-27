@@ -1,5 +1,4 @@
 // src/features/dashboard/pages/DashboardPage.tsx
-import { useEffect, useState } from "react";
 import {
   Search,
   Bot,
@@ -11,7 +10,6 @@ import {
 // Composants existants
 import { OpportunityFeedItem } from "../components/OpportunityFeedItem";
 import { InsightPromoCard } from "../components/InsightPromoCard";
-import { RecentActivity, type ActivityItem } from "../components/RecentActivity";
 import { Skeleton } from "@/shared/components/Skeleton";
 import { useAuthStore } from "@/app/store/authStore";
 import { DashboardChatEntry } from "../components/DashboardChatEntry";
@@ -41,23 +39,9 @@ export default function DashboardPage() {
   // 2. Stratégie IA (nouveau)
   const { data: strategy, loading: loadingStrategy } = useUserStrategy();
 
-  const [loadingActivity, setLoadingActivity] = useState(true);
-  const [activity, setActivity] = useState<ActivityItem[]>([]);
   const user = useAuthStore((state) => state.user);
 
-  // Activité récente (mock temporaire, à remplacer par de vraies données plus tard)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setActivity([
-        { id: "1", time: "Il y a 4h", title: "Nouveau match : Fonds PNUD (94%)" },
-        { id: "2", time: "Il y a 13h", title: "Attestation Fiscale expirée" },
-        { id: "3", time: "Hier", title: "Candidature USAID passée en «En cours»" },
-      ]);
-      setLoadingActivity(false);
-    }, 300);
 
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className="mx-auto flex max-w-350 gap-6">
@@ -146,11 +130,7 @@ export default function DashboardPage() {
 
         <InsightPromoCard />
 
-        {loadingActivity ? (
-          <Skeleton className="h-40 w-full rounded-xl" />
-        ) : (
-          <RecentActivity items={activity} />
-        )}
+        
       </aside>
     </div>
   );

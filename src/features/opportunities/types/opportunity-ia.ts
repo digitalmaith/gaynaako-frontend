@@ -1,3 +1,5 @@
+// src/features/opportunities/types/opportunity-ia.ts
+
 export interface OpportunityIa {
   id: string;
   sourceName: string;
@@ -30,6 +32,16 @@ export interface OpportunityIa {
   collectedAt: string;
   createdAt: string;
   updatedAt: string;
+
+  // ✨ Nouveaux champs pour le score de matching (calculés par le backend)
+  matchScore?: number;
+  matchAdvice?: string;
+  matchLabel?: string | null;
+  matchDetails?: {
+    secteurMatch?: boolean;
+    motsClesMatch?: boolean;
+    localisationMatch?: boolean;
+  } | null;
 }
 
 export interface OpportunityIaListResponse {
